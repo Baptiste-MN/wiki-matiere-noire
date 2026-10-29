@@ -154,6 +154,24 @@ ul.ck input{width:18px;height:18px;margin-top:2px;flex:none;accent-color:var(--l
 ul.ck li.done span{color:var(--ink3)}
 ul.ck small{display:block;font-size:12px;color:var(--live);margin-top:2px}
 
+/* ── accueil : deux choix ── */
+.choix{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:0 0 36px;max-width:900px}
+.choix a{display:flex;flex-direction:column;gap:8px;min-height:190px;padding:24px 26px;border:1px solid var(--ink);border-radius:4px;
+  text-decoration:none;background:var(--card);position:relative}
+.choix a:hover{background:var(--ink);color:var(--paper)}
+.choix a:hover .cp{color:var(--rule)}
+.choix .ct{font-size:32px;font-weight:600;letter-spacing:-.02em;line-height:1.05}
+.choix .cp{color:var(--ink2);font-size:15px;max-width:34ch}
+.choix .cn{margin-top:auto;font-size:13px;font-variant-numeric:tabular-nums;color:var(--ink3)}
+.profils{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 20px;font-size:14px}
+.profils span{color:var(--ink2);margin-right:4px}
+.profils button{border:1px solid var(--rule);background:var(--card);border-radius:14px;padding:4px 12px;cursor:pointer;font-size:13px}
+.profils button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.ofr{border:1px solid var(--rule);border-radius:4px;background:#fff;height:calc(100vh - 200px);min-height:520px;overflow:hidden}
+.ofr iframe{width:100%;height:100%;border:0;display:block;background:#fff}
+.ofr:fullscreen{height:100vh;border:0;border-radius:0}
+@media (max-width:860px){.choix{grid-template-columns:1fr}.choix a{min-height:140px}.choix .ct{font-size:26px}}
+
 #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:4px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
 #toast.on{opacity:1}
 .modal{position:fixed;inset:0;background:rgba(20,22,26,.45);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
@@ -282,7 +300,10 @@ const T={
   signalerT:'Une erreur, une étape qui manque, une question ? Baptiste recevra ton message.',
   envoyer:'Envoyer',annuler:'Annuler',envoye:'Merci, ton message a été envoyé.',liees:'Fiches qui renvoient ici',
   outils:'Outils concernés',etape:(i,n)=>'Étape '+i+' sur '+n,suivante:'Fiche suivante',precedente:'Précédente',
-  commencer:'Commencer',lu:'lue',fin:'Parcours terminé.',loc:'fr-FR'},
+  commencer:'Commencer',lu:'lue',fin:'Parcours terminé.',loc:'fr-FR',
+  choixO:'Outils',choixOP:'Les petits outils du studio, à utiliser directement ici.',choixP:'Parcours d’arrivée',choixPP:'Tout ce qu’il faut savoir en arrivant au studio, selon ton profil.',
+  profilQ:'Tu arrives en tant que',profilTous:'Tout afficher',outilsVide:'Aucun outil pour l’instant.',ouvrir:'Ouvrir',pleinEcran:'Plein écran',telecharger:'Télécharger',
+  outilIntrouvable:'Cet outil n’existe pas ou a été retiré.',etapes:n=>n+' étape'+(n>1?'s':''),pourQui:'Pour',nOutils:n=>n+' outil'+(n>1?'s':''),tousOutils:'Tous les outils'},
  en:{search:'Search guides…',heroT:'How we do things at the studio',
   heroP:'Matiere Noire’s how-to guides: our tools, our procedures, our equipment.',
   parcours:'Paths',categories:'Categories',tout:'All guides',recent:'Recently updated',
@@ -294,7 +315,10 @@ const T={
   signalerT:'A mistake, a missing step, a question? Baptiste will get your message.',
   envoyer:'Send',annuler:'Cancel',envoye:'Thanks, your message was sent.',liees:'Guides linking here',
   outils:'Related tools',etape:(i,n)=>'Step '+i+' of '+n,suivante:'Next guide',precedente:'Previous',
-  commencer:'Start',lu:'read',fin:'Path completed.',loc:'en-GB'}
+  commencer:'Start',lu:'read',fin:'Path completed.',loc:'en-GB',
+  choixO:'Tools',choixOP:'The studio’s small tools, to use right here.',choixP:'Onboarding path',choixPP:'Everything you need to know when joining the studio, by profile.',
+  profilQ:'You are joining as',profilTous:'Show everything',outilsVide:'No tools yet.',ouvrir:'Open',pleinEcran:'Full screen',telecharger:'Download',
+  outilIntrouvable:'This tool doesn’t exist or was removed.',etapes:n=>n+' step'+(n>1?'s':''),pourQui:'For',nOutils:n=>n+' tool'+(n>1?'s':''),tousOutils:'All tools'}
 };
 let L=localStorage.getItem('mn_wiki_lang')||((navigator.language||'').toLowerCase().startsWith('fr')?'fr':'en');
 const t=()=>T[L];
@@ -307,10 +331,10 @@ const OUTILS={
   admin:['Administration','/admin-matiere-noire/'], dashboard:['Rentabilité','/dashboard-matiere-noire/'],
   recap:['Récap projets','/project-recap/'], paie:['Bulletins de stage','/paie-matiere-noire/']
 };
-const RESERVES=['parcours','settings','sidebar','customize','upgrade','downloads','nouvelle'];
+const RESERVES=['outil','outils','parcours','settings','sidebar','customize','upgrade','downloads','nouvelle'];
 
 /* ═══ état ═══ */
-let FICHES={}, PARC={}, RETOURS={}, IMG={}, charge=false;
+let FICHES={}, PARC={}, APPLIS={}, CODE={}, RETOURS={}, IMG={}, charge=false;
 let vue={k:'home'};                // home | cat | fiche | parcours | search | edit | pedit | retours | relire | archives | historique
 let ctxParc=null;                  // parcours suivi quand on ouvre une fiche depuis un parcours
 let q='';
@@ -365,20 +389,23 @@ async function hydrate(root){
 
 /* ═══ données ═══ */
 onValue(ref(db,'wiki'),s=>{
-  const v=s.val()||{}; FICHES=v.fiches||{}; PARC=v.parcours||{}; charge=true;
-  if(!['edit','pedit','suivi','modele'].includes(vue.k)) route(); else renderAdm();
+  const v=s.val()||{}; FICHES=v.fiches||{}; PARC=v.parcours||{}; APPLIS=v.outils||{}; charge=true;
+  if(!['edit','pedit','suivi','modele','oedit','outil'].includes(vue.k)) route(); else renderAdm();
 },e=>{$('#main').innerHTML=`<div class="notice err">Impossible de charger le wiki : ${esc(e.message)}</div>`;});
 if(EDIT) onValue(ref(db,'wikiRetours'),s=>{RETOURS=s.val()||{};renderAdm();if(vue.k==='retours')render();},()=>{});
 
 /* ═══ navigation (hash = #slug d'une fiche, ou #parcours-<id>) ═══ */
 function route(){
   const h=decodeURIComponent(location.hash.slice(1));
-  if(!h){ if(!['cat','search','retours','relire','archives','historique','checklists','suivi','modele'].includes(vue.k)) vue={k:'home'}; }
+  if(!h){ if(!['cat','search','retours','relire','archives','historique','checklists','suivi','modele','oedit'].includes(vue.k)) vue={k:'home'}; }
+  else if(h==='outils') vue={k:'outils'};
+  else if(h==='parcours') vue={k:'plist'};
+  else if(h.startsWith('outil-')) vue={k:'outil',slug:h.slice(6)};
   else if(h.startsWith('parcours-')) vue={k:'parcours',id:h.slice(9)};
   else vue={k:'fiche',slug:h};
   render();
 }
-window.addEventListener('hashchange',()=>{ if(vue.k==='edit'&&!confirm('Quitter l’éditeur ? Le brouillon reste enregistré sur cet ordinateur.')) return; route(); window.scrollTo(0,0); });
+window.addEventListener('hashchange',()=>{ if((vue.k==='edit'||vue.k==='oedit')&&!confirm('Quitter l’éditeur ? Le brouillon reste enregistré sur cet ordinateur.')) return; route(); window.scrollTo(0,0); });
 function go(k,extra){vue={k,...extra}; if(location.hash) history.replaceState(null,'',location.pathname); render(); window.scrollTo(0,0);}
 
 /* ═══ rendu général ═══ */
@@ -391,7 +418,7 @@ function render(){
   if(!charge){$('#main').innerHTML='<div class="empty">…</div>';return;}
   ({home:vHome,cat:vCat,search:vSearch,fiche:vFiche,parcours:vParcours,edit:vEdit,pedit:vPEdit,
     retours:vRetours,relire:vRelire,archives:vArchives,historique:vHistorique,
-    checklists:vChecklists,suivi:vSuivi,modele:vModele})[vue.k]();
+    checklists:vChecklists,suivi:vSuivi,modele:vModele,outils:vOutils,outil:vOutil,oedit:vOEdit,plist:vPList})[vue.k]();
 }
 function renderAdm(){
   const a=$('#adm'); if(!DIRECTION){a.innerHTML='';return;}
@@ -413,7 +440,9 @@ function categories(){
 function renderSide(){
   const ps=Object.entries(PARC).filter(([,p])=>p&&(p.fiches||[]).length).sort((a,b)=>(a[1].ordre||0)-(b[1].ordre||0));
   const cats=categories();
+  const nO=Object.values(APPLIS).filter(o=>o&&!o.archive).length;
   $('#side').innerHTML=`
+    <div><h3>${esc(t().choixO)}</h3><ul><li><a href="#outils" class="${['outils','outil'].includes(vue.k)?'on':''}">${esc(t().tousOutils)}<span>${nO}</span></a></li></ul></div>
     ${ps.length?`<div><h3>${esc(t().parcours)}</h3><ul>${ps.map(([id,p])=>`<li><a href="#parcours-${esc(id)}" class="${vue.k==='parcours'&&vue.id===id?'on':''}">${esc(tr(p.titre))}<span>${(p.fiches||[]).length}</span></a></li>`).join('')}</ul></div>`:''}
     <div><h3>${esc(t().categories)}</h3><ul>
       <li><a href="#" data-cat="" class="${vue.k==='home'?'on':''}">${esc(t().tout)}<span>${actives().length}</span></a></li>
@@ -432,21 +461,28 @@ const item=f=>`<li><a href="#${esc(f.slug)}"><div class="it">${esc(tr(f.titre))}
   <div class="im">${esc(f.categorie||'Autre')} · ${esc(fmtD(f.majLe))}</div></a></li>`;
 
 /* ═══ vues lecture ═══ */
-function vHome(){
+function parcoursPrincipal(){
   const ps=Object.entries(PARC).filter(([,p])=>p&&(p.fiches||[]).length).sort((a,b)=>(a[1].ordre||0)-(b[1].ordre||0));
-  const recents=actives().sort((a,b)=>(b.majLe||0)-(a.majLe||0)).slice(0,5);
+  return ps.length===1?'#parcours-'+ps[0][0]:'#parcours';
+}
+function vHome(){
+  const a=EDIT?accueilAFaire():null;
+  const nO=Object.values(APPLIS).filter(o=>o&&!o.archive).length;
+  const pp=parcoursPrincipal(), nEtapes=pp.startsWith('#parcours-')?idsParcours(pp.slice(10)).length:0;
   $('#main').innerHTML=`<div class="hero"><h1>${esc(t().heroT)}</h1><p>${esc(t().heroP)}</p></div>
-    ${EDIT&&accueilManquant()?`<div class="notice">${accueilManquant()} fiche(s) d’accueil prête(s) à importer (accès, comptes, plateforme, poste, paie, freelances), avec 3 parcours. <button class="btn p" id="imp-acc">Importer les fiches d’accueil</button></div>`:''}
-    ${!actives().length?(EDIT?`<div class="empty">Aucune fiche pour l’instant. <button class="btn p" id="first">Créer la première fiche</button></div>`:`<div class="empty">${esc(t().vide)}</div>`):''}
-    ${ps.length?`<div class="sec"><h2>${esc(t().parcours)}</h2><div class="parc">${ps.map(([id,p])=>{
-      const l=lus(), n=(p.fiches||[]).length, faits=(p.fiches||[]).filter(x=>l[x]).length;
-      return `<a href="#parcours-${esc(id)}"><div class="it">${esc(tr(p.titre))}</div>
-        ${tr(p.description)?`<div class="ir">${esc(tr(p.description))}</div>`:''}
-        <div class="im">${esc(t().fiches(n))}${faits?` · ${faits}/${n} ${esc(t().lu)}${faits>1&&L==='fr'?'s':''}`:''}</div></a>`;}).join('')}</div></div>`:''}
-    ${recents.length>3?`<div class="sec"><h2>${esc(t().recent)}</h2><ul class="items">${recents.map(item).join('')}</ul></div>`:''}
-    ${categories().map(([c,l])=>`<div class="sec"><h2>${esc(c)}</h2><ul class="items">${l.sort((a,b)=>tr(a.titre).localeCompare(tr(b.titre),'fr')).map(item).join('')}</ul></div>`).join('')}`;
+    ${a&&a.afaire?`<div class="notice">${esc(a.msg)} <button class="btn p" id="imp-acc">${a.manq.length||!a.fusion||a.oManq.length?'Importer':'Mettre à jour'}</button></div>`:''}
+    <div class="choix">
+      <a href="#outils"><span class="ct">${esc(t().choixO)}</span><span class="cp">${esc(t().choixOP)}</span><span class="cn">${esc(t().nOutils(nO))}</span></a>
+      <a href="${pp}"><span class="ct">${esc(t().choixP)}</span><span class="cp">${esc(t().choixPP)}</span><span class="cn">${esc(nEtapes?t().etapes(nEtapes):'')}</span></a>
+    </div>
+    ${EDIT&&!actives().length?`<div class="empty">Aucune fiche pour l’instant. <button class="btn p" id="first">Créer la première fiche</button></div>`:''}`;
   const f=$('#first'); if(f) f.onclick=()=>go('edit',{id:null});
   const ia=$('#imp-acc'); if(ia) ia.onclick=importerAccueil;
+}
+function vPList(){
+  const ps=Object.entries(PARC).filter(([,p])=>p&&(p.fiches||[]).length).sort((a,b)=>(a[1].ordre||0)-(b[1].ordre||0));
+  $('#main').innerHTML=`<div class="sec"><h2>${esc(t().parcours)}</h2>${ps.length?`<div class="parc">${ps.map(([id,p])=>`<a href="#parcours-${esc(id)}"><div class="it">${esc(tr(p.titre))}</div>
+    ${tr(p.description)?`<div class="ir">${esc(tr(p.description))}</div>`:''}<div class="im">${esc(t().fiches((p.fiches||[]).length))}</div></a>`).join('')}</div>`:`<div class="empty">${esc(t().vide)}</div>`}</div>`;
 }
 function vCat(){
   const l=actives().filter(f=>(f.categorie||'Autre')===vue.cat).sort((a,b)=>tr(a.titre).localeCompare(tr(b.titre),'fr'));
@@ -475,7 +511,7 @@ function vFiche(){
     &&new RegExp('\\[\\['+f.slug+'(\\||\\]\\])').test((x.contenu.fr||'')+(x.contenu.en||'')));
   let pnav='';
   if(ctxParc&&PARC[ctxParc]&&(PARC[ctxParc].fiches||[]).includes(f.id)){
-    const p=PARC[ctxParc], ids=p.fiches.filter(id=>FICHES[id]&&!FICHES[id].archive), i=ids.indexOf(f.id);
+    const p=PARC[ctxParc], ids=idsParcours(ctxParc).includes(f.id)?idsParcours(ctxParc):p.fiches.filter(id=>FICHES[id]&&!FICHES[id].archive), i=ids.indexOf(f.id);
     const prev=i>0?FICHES[ids[i-1]]:null, next=i<ids.length-1?FICHES[ids[i+1]]:null;
     pnav=`<div class="pnav"><span><a href="#parcours-${esc(ctxParc)}">${esc(tr(p.titre))}</a> — ${esc(t().etape(i+1,ids.length))}</span>
       <span>${prev?`<a href="#${esc(prev.slug)}">${esc(t().precedente)}</a> · `:''}${next?`<a href="#${esc(next.slug)}">${esc(t().suivante)} : ${esc(tr(next.titre))}</a>`:esc(t().fin)}</span></div>`;
@@ -529,16 +565,29 @@ function signaler(f){
     catch(e){alert('Échec : '+e.message);}
   };
 }
+const profilDe=pid=>{try{return localStorage.getItem('mn_wiki_profil_'+pid)||'';}catch(_){return '';}};
+/* fiches d'un parcours, filtrées selon le profil choisi (stagiaire, freelance…) */
+function idsParcours(pid){
+  const p=PARC[pid]; if(!p) return [];
+  const sel=p.profils?profilDe(pid):'';
+  return (p.fiches||[]).filter(id=>FICHES[id]&&!FICHES[id].archive&&(!sel||!(p.publics&&p.publics[id])||p.publics[id].includes(sel)));
+}
+const labelProfil=(p,k)=>{const x=(p.profils||[]).find(y=>y.k===k);return x?(x[L]||x.fr):k;};
 function vParcours(){
   const p=PARC[vue.id];
   if(!p){$('#main').innerHTML=`<div class="empty">${esc(t().introuvable)} <a href="#">${esc(t().retour)}</a></div>`;return;}
   ctxParc=vue.id;
-  const ids=(p.fiches||[]).filter(id=>FICHES[id]&&(!FICHES[id].archive)), l=lus();
+  const sel=p.profils?profilDe(vue.id):'', ids=idsParcours(vue.id), l=lus();
   $('#main').innerHTML=`<article><h1>${esc(tr(p.titre))}</h1>${tr(p.description)?`<p class="lead">${esc(tr(p.description))}</p>`:''}
-    <div class="md"><ol>${ids.map(id=>{const f=FICHES[id];return `<li><a href="#${esc(f.slug)}"><strong>${esc(tr(f.titre))}</strong></a>${l[id]?` <span class="chip">${esc(t().lu)}</span>`:''}
+    ${p.profils?`<div class="profils"><span>${esc(t().profilQ)}</span>${p.profils.map(x=>`<button data-pf="${esc(x.k)}" aria-pressed="${sel===x.k}">${esc(x[L]||x.fr)}</button>`).join('')}
+      <button data-pf="" aria-pressed="${!sel}">${esc(t().profilTous)}</button></div>`:''}
+    <div class="md"><ol>${ids.map(id=>{const f=FICHES[id], pub=p.publics&&p.publics[id];
+      return `<li><a href="#${esc(f.slug)}"><strong>${esc(tr(f.titre))}</strong></a>${l[id]?` <span class="chip">${esc(t().lu)}</span>`:''}
+      ${!sel&&pub?` <span class="chip">${esc(t().pourQui)} : ${pub.map(k=>esc(labelProfil(p,k))).join(', ')}</span>`:''}
       ${tr(f.resume)?`<br><span style="color:var(--ink2)">${esc(tr(f.resume))}</span>`:''}</li>`;}).join('')}</ol></div>
     <div class="actions">${ids.length?`<a class="btn p" href="#${esc(FICHES[ids[0]].slug)}">${esc(t().commencer)}</a>`:''}
       ${EDIT?`<span class="spacer"></span><button class="btn" id="p-edit">Modifier le parcours</button>`:''}</div></article>`;
+  $('#main').querySelectorAll('[data-pf]').forEach(b=>b.onclick=()=>{try{localStorage.setItem('mn_wiki_profil_'+vue.id,b.dataset.pf);}catch(_){}vParcours();});
   const e=$('#p-edit'); if(e) e.onclick=()=>go('pedit',{id:vue.id});
 }
 
@@ -771,7 +820,9 @@ function vPEdit(){
       <div class="two"><div><label>Description (FR)</label><input id="pe-dfr" value="${esc(P.description.fr)}"></div>
         <div><label>Description (EN)</label><input id="pe-den" value="${esc(P.description.en)}"></div></div>
       <label>Fiches, dans l’ordre</label>
-      <ol class="porder" style="list-style:decimal;padding-left:22px">${P.fiches.map((id,i)=>`<li><span>${esc(FICHES[id]?tr(FICHES[id].titre,'fr'):'(fiche supprimée)')}</span>
+      ${P.profils?'<p class="hint" style="margin:0 0 6px">Coche pour quels profils chaque fiche s’affiche (toutes cochées = tout le monde).</p>':''}
+      <ol class="porder" style="list-style:decimal;padding-left:22px">${P.fiches.map((id,i)=>`<li><span>${esc(FICHES[id]?tr(FICHES[id].titre,'fr'):'(fiche supprimée)')}
+        ${P.profils?`<span class="tools" style="margin-top:4px">${P.profils.map(x=>`<label><input type="checkbox" data-pub="${esc(id)}" value="${esc(x.k)}"${!(P.publics&&P.publics[id])||P.publics[id].includes(x.k)?' checked':''}>${esc(x.fr)}</label>`).join('')}</span>`:''}</span>
         <button class="btn" data-up="${i}"${i?'':' disabled'}>Monter</button><button class="btn" data-dn="${i}"${i<P.fiches.length-1?'':' disabled'}>Descendre</button>
         <button class="btn d" data-rm="${i}">Retirer</button></li>`).join('')||'<li style="list-style:none;color:var(--ink3)">Aucune fiche.</li>'}</ol>
       <div class="two" style="margin-top:10px"><select id="pe-add"><option value="">Ajouter une fiche…</option>${dispo.map(f=>`<option value="${esc(f.id)}">${esc(tr(f.titre,'fr'))}</option>`).join('')}</select></div>
@@ -779,6 +830,10 @@ function vPEdit(){
   const b=(s,fn)=>{$(s).oninput=e=>fn(e.target.value);};
   b('#pe-tfr',v=>P.titre.fr=v);b('#pe-ten',v=>P.titre.en=v);b('#pe-dfr',v=>P.description.fr=v);b('#pe-den',v=>P.description.en=v);
   $('#pe-add').onchange=e=>{if(e.target.value){P.fiches.push(e.target.value);vPEdit();}};
+  $('#main').querySelectorAll('[data-pub]').forEach(c=>c.onchange=()=>{
+    const id=c.dataset.pub, ks=[...$('#main').querySelectorAll(`[data-pub="${id}"]:checked`)].map(x=>x.value);
+    P.publics=P.publics||{}; if(ks.length===P.profils.length) delete P.publics[id]; else P.publics[id]=ks;
+  });
   $('#main').querySelectorAll('[data-up]').forEach(x=>x.onclick=()=>{const i=+x.dataset.up;[P.fiches[i-1],P.fiches[i]]=[P.fiches[i],P.fiches[i-1]];vPEdit();});
   $('#main').querySelectorAll('[data-dn]').forEach(x=>x.onclick=()=>{const i=+x.dataset.dn;[P.fiches[i+1],P.fiches[i]]=[P.fiches[i],P.fiches[i+1]];vPEdit();});
   $('#main').querySelectorAll('[data-rm]').forEach(x=>x.onclick=()=>{P.fiches.splice(+x.dataset.rm,1);vPEdit();});
@@ -1025,6 +1080,49 @@ Send the details and receipts to Sam and Baptiste; Sam will tell you how they ar
 If any document has changed or expired, send the updated version before you start:
 - URSSAF certificate of compliance (attestation de vigilance) less than 6 months old
 - Bank details, billing address, SIRET number if your status has changed`}},
+ {slug:'fireflies-enregistrer-une-visio',outils:[],tags:['fireflies','réunion','visio','compte rendu'],categorie:'Outils du studio',
+  titre:{fr:'Fireflies : enregistrer une visio et recevoir les notes',en:'Fireflies: recording a video call and getting the notes'},
+  resume:{fr:'Fred, le bot Fireflies, rejoint nos visios, les enregistre et rédige les notes.',en:'Fred, the Fireflies bot, joins our video calls, records them and writes the notes.'},
+  contenu:{fr:`Fireflies est un bot qui rejoint nos visios, les enregistre et rédige les notes à notre place. Il y a deux façons de l’ajouter.
+
+## Option 1 — Réunion planifiée (le plus souvent), pour tout le monde
+1. Crée ton invitation d’agenda comme d’habitude, avec le lien Google Meet, Zoom ou Teams.
+2. Ajoute **fred@fireflies.ai** comme invité.
+3. Envoie l’invitation.
+4. C’est tout : Fred, le bot Fireflies, rejoindra la réunion à l’heure.
+
+## Option 2 — Réunion déjà commencée (ou Fred oublié), pour Pierre, Félix, Sam et Baptiste
+1. Copie le lien de la visio.
+2. Ouvre https://app.fireflies.ai/
+3. Clique sur **Add to live meeting** et colle le lien.
+4. Fred rejoint la réunion en moins d’une minute.
+
+> Réservé à la direction : il faut être connecté avec **admin@matiere-noire.paris** pour accéder à la plateforme Fireflies.
+
+## Bon à savoir
+- **Salle d’attente** : si Fred attend d’être admis, fais-le entrer comme n’importe quel invité.
+- **Préviens les participants** : Fred est visible par tout le monde. Avec un client, dis en début d’appel que la réunion est enregistrée.
+- **Tes notes** : la transcription et le résumé arrivent par mail et sur app.fireflies.ai quelques minutes après l’appel, envoyés à toutes les adresses @matiere-noire.paris invitées à la réunion.`,
+   en:`Fireflies is a bot that joins our video calls, records them and writes the notes for us. There are two ways to add it.
+
+## Option 1 — Planned meeting (most of the time), for everyone
+1. Create your calendar invite as usual, with the Google Meet, Zoom or Teams link included.
+2. Add **fred@fireflies.ai** as a guest.
+3. Send the invite.
+4. Done: Fred, the Fireflies bot, will join on time.
+
+## Option 2 — Meeting already started (or Fred forgotten), for Pierre, Felix, Sam and Baptiste
+1. Copy the video call link.
+2. Open https://app.fireflies.ai/
+3. Click **Add to live meeting** and paste the link.
+4. Fred joins within a minute.
+
+> Management team only: you need to be logged in as **admin@matiere-noire.paris** to access the Fireflies platform.
+
+## Good to know
+- **Waiting room**: if Fred is waiting to be let in, admit him like any guest.
+- **Tell people**: Fred is visible to everyone. With clients, say at the start that the call is recorded.
+- **Your notes**: the transcript and summary arrive by email and on app.fireflies.ai a few minutes after the call, sent to every @matiere-noire.paris address invited to the call.`}},
  {slug:'retour-chez-matiere-noire',outils:['mn','time'],tags:['freelances','retour'],
   titre:{fr:'Retour chez Matiere Noire (freelances)',en:'Back at Matiere Noire (freelancers)'},
   resume:{fr:'L’essentiel à revoir quand tu reviens pour une nouvelle mission.',en:'What to check when you come back for a new assignment.'},
@@ -1055,27 +1153,138 @@ If any document has changed or expired, send the updated version before you star
 - Fill in time tracking **every day**: ${P_URL}/time-matiere-noire/ — it is also used to check your invoice.
 - Send your invoice to Sam at the end of the assignment.`}}
 ],
-parcours:[
- {cle:'stagiaires',titre:{fr:'Arrivée au studio : stagiaires',en:'Joining the studio: interns'},description:{fr:'Tout ce qu’il faut savoir pour ta première semaine.',en:'Everything you need for your first week.'},
-  slugs:['acces-et-horaires','comptes-et-documents','se-connecter-a-la-plateforme','poste-referent-et-communication','tickets-restaurant-paie-et-frais']},
- {cle:'freelances',titre:{fr:'Arrivée au studio : freelances',en:'Joining the studio: freelancers'},description:{fr:'Pour une première mission chez Matiere Noire.',en:'For a first assignment at Matiere Noire.'},
-  slugs:['acces-et-horaires','comptes-et-documents','se-connecter-a-la-plateforme','poste-referent-et-communication','freelances-facturation']},
- {cle:'retour',titre:{fr:'Retour d’un freelance',en:'Returning freelancers'},description:{fr:'L’essentiel à revoir avant une nouvelle mission.',en:'What to check before a new assignment.'},
-  slugs:['retour-chez-matiere-noire','se-connecter-a-la-plateforme','freelances-facturation']}
-]};
-const accueilManquant=()=>ACCUEIL.fiches.filter(f=>!parSlug(f.slug)).length;
-async function importerAccueil(){
+parcours:{titre:{fr:'Arrivée au studio',en:'Joining the studio'},
+  description:{fr:'Les fiches à lire en arrivant au studio. Choisis ton profil pour n’afficher que celles qui te concernent.',en:'The guides to read when joining the studio. Pick your profile to see only the ones that apply to you.'},
+  profils:[{k:'stagiaire',fr:'Stagiaire',en:'Intern'},{k:'freelance',fr:'Freelance (première mission)',en:'Freelancer (first assignment)'},{k:'retour',fr:'Freelance (de retour)',en:'Returning freelancer'}],
+  etapes:[{slug:'retour-chez-matiere-noire',pour:['retour']},{slug:'acces-et-horaires',pour:['stagiaire','freelance']},
+    {slug:'comptes-et-documents',pour:['stagiaire','freelance']},{slug:'se-connecter-a-la-plateforme'},{slug:'fireflies-enregistrer-une-visio'},
+    {slug:'poste-referent-et-communication',pour:['stagiaire','freelance']},{slug:'tickets-restaurant-paie-et-frais',pour:['stagiaire']},
+    {slug:'freelances-facturation',pour:['freelance','retour']}]}
+};
+const OUTILS_PROPOSES=[{slug:'generateur-de-waveform',fichier:'mn_waveform_V1_9.html',
+  titre:{fr:'Générateur de waveform',en:'Waveform generator'},
+  description:{fr:'Dépose un fichier audio : l’outil dessine sa forme d’onde, avec grille et repères de temps, à exporter en PNG ou SVG.',
+    en:'Drop an audio file: the tool draws its waveform, with grid and time markers, to export as PNG or SVG.'},
+  code:"<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"UTF-8\">\n<title>MN_WAVEFORM_GENERATOR_V1.9<\/title>\n<style>\n*{box-sizing:border-box;margin:0;padding:0}\nbody{font-family:system-ui,sans-serif;background:#1a1a1a;color:#e0e0e0;display:flex;height:100vh;overflow:hidden}\nbody::before{content:'';position:fixed;inset:0;background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABbYAAAB2CAIAAACbLVKlAAAACXBIWXMAAC4jAAAuIwF4pT92AAAF0mlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgMTAuMC1jMDAwIDc5LmQwNGNjMTY5OCwgMjAyNS8wNy8wMi0xMjoxODoxMyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0RXZ0PSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VFdmVudCMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIDI3LjMgKE1hY2ludG9zaCkiIHhtcDpDcmVhdGVEYXRlPSIyMDI1LTAyLTIxVDEzOjIxOjE3KzAxOjAwIiB4bXA6TW9kaWZ5RGF0ZT0iMjAyNi0wMi0wOVQyMjo0NTo0NSswMTowMCIgeG1wOk1ldGFkYXRhRGF0ZT0iMjAyNi0wMi0wOVQyMjo0NTo0NSswMTowMCIgZGM6Zm9ybWF0PSJpbWFnZS9wbmciIHBob3Rvc2hvcDpDb2xvck1vZGU9IjMiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6OWRlY2IxYTQtMDVjZC00OWZmLTk1MzQtNDNjYTA3ZTljNzhmIiB4bXBNTTpEb2N1bWVu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);background-repeat:no-repeat;background-position:center bottom;background-size:80%;opacity:0.06;pointer-events:none;z-index:0}\n#sidebar{width:280px;min-width:280px;background:#242424;border-right:1px solid #333;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}\n#main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:16px;overflow:hidden}\nh1{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#888;border-bottom:1px solid #333;padding-bottom:8px}\n.group{display:flex;flex-direction:column;gap:8px}\n.group>label{font-size:13px;font-weight:600;color:#ccc}\n.sublabel{font-size:11px;font-weight:400;color:#777}\n.row{display:flex;gap:8px;align-items:center}\n.row input[type=number]{flex:1;background:#1a1a1a;border:1px solid #444;border-radius:6px;padding:6px 8px;color:#e0e0e0;font-size:13px}\n.row span{font-size:12px;color:#666;min-width:20px}\ninput[type=color]{width:100%;height:32px;background:#1a1a1a;border:1px solid #444;border-radius:6px;cursor:pointer;padding:2px}\nselect{width:100%;background:#1a1a1a;border:1px solid #444;border-radius:6px;padding:6px 8px;color:#e0e0e0;font-size:13px}\n.check-label{font-size:12px;color:#aaa;display:flex;align-items:center;gap:6px;cursor:pointer}\n.btn-upload{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px;background:#2a2a2a;border:1px dashed #555;border-radius:8px;color:#aaa;font-size:13px;cursor:pointer;transition:all .2s}\n.btn-upload:hover,.btn-upload.drag-over{border-color:#5865f2;color:#e0e0e0;background:#2e2e3a}\n.btn-export{width:100%;padding:10px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .2s}\n.btn-svg{background:#3a3a3a;color:#e0e0e0}.btn-svg:hover{background:#4a4a4a}\n.btn-png{background:#5865f2;color:#fff}.btn-png:hover{background:#6a78ff}\n#canvas-wrap{position:relative;background:#111;border-radius:8px;overflow:hidden;box-shadow:0 4px 24px #0008}\n#canvas-wrap.drag-over{box-shadow:0 0 0 2px #5865f2,0 4px 24px #0008}\n#canvas-wrap.selecting{cursor:crosshair}\ncanvas{display:block}\n#drop-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;opacity:.5}\n#drop-hint p{font-size:14px;color:#888;margin-top:8px}\n#duration-label{font-size:12px;color:#666;text-align:center}\n.grid-row{display:flex;gap:6px;align-items:center}\n.grid-row select{flex:1}\n#sel-overlay{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}\n#sel-rect{position:absolute;top:0;height:100%;background:rgba(88,101,242,0.18);border:1.5px solid #5865f2;display:none;pointer-events:none}\n#zoom-panel{background:#111;border-radius:8px;box-shadow:0 4px 24px #0008;overflow:hidden;display:none;flex-direction:column;position:relative;flex-shrink:0;max-width:100%;align-self:center}\n#zoom-panel-header{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#1a1a1a;border-bottom:1px solid #333;font-size:11px;color:#666;white-space:nowrap;gap:12px}\n#zoom-close{background:none;border:none;color:#888;cursor:pointer;font-size:16px;line-height:1;padding:0 2px;flex-shrink:0}\n#zoom-close:hover{color:#e0e0e0}\n#zoom-canvas-wrap{overflow:hidden;display:flex;align-items:stretch}\n#zoom-canvas{display:block}\n<\/style>\n<\/head>\n<body>\n<div id=\"sidebar\">\n  <h1>MN Waveform Generator <span style=\"color:#555;font-weight:400\">v1.9<\/span><\/h1>\n\n  <div class=\"group\">\n    <label>Fichier audio<\/label>\n    <label class=\"btn-upload\" id=\"upload-btn\">\n      <svg width=\"16\" height=\"16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" viewBox=\"0 0 24 24\"><path d=\"M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12\"/><\/svg>\n      Charger un fichier audio\n      <input type=\"file\" id=\"file-input\" accept=\"audio/*\" style=\"display:none\">\n    <\/label>\n    <div id=\"duration-label\">—<\/div>\n  <\/div>\n\n  <div class=\"group\">\n    <label>Dimensions (px)<\/label>\n    <div class=\"row\">\n      <input type=\"number\" id=\"w\" value=\"4500\" min=\"100\" max=\"9999\" oninput=\"updateCanvas()\">\n      <span>×<\/span>\n      <input type=\"number\" id=\"h\" value=\"400\" min=\"40\" max=\"2000\" oninput=\"updateCanvas()\">\n    <\/div>\n    <div class=\"grid-row\">\n      <span class=\"sublabel\" style=\"white-space:nowrap\">Répétitions<\/span>\n      <input type=\"number\" id=\"repeat-count\" value=\"1\" min=\"1\" max=\"20\" oninput=\"updateCanvas()\" style=\"width:64px;background:#1a1a1a;border:1px solid #444;border-radius:6px;padding:6px 8px;color:#e0e0e0;font-size:13px;margin-left:auto\">\n    <\/div>\n  <\/div>\n\n  <div class=\"group\">\n    <label>Style de waveform<\/label>\n    <select id=\"waveform-style\" onchange=\"updateCanvas()\">\n      <option value=\"mirror\">Miroir (haut + bas)<\/option>\n      <option value=\"top\">Vers le haut seulement<\/option>\n      <option value=\"filled\">Remplie / filled<\/option>\n    <\/select>\n  <\/div>\n\n  <div class=\"group\">\n    <label>Grille temporelle<\/label>\n    <div class=\"grid-row\">\n      <span class=\"sublabel\" style=\"white-space:nowrap\">Grille<\/span>\n      <select id=\"grid-unit\" style=\"flex:1;margin-left:6px\" onchange=\"updateCanvas()\">\n        <option value=\"s\">Secondes<\/option>\n        <option value=\"m\" selected>Minutes<\/option>\n        <option value=\"h\">Heures<\/option>\n      <\/select>\n      <span class=\"sublabel\">tous les<\/span>\n      <input type=\"number\" id=\"grid-interval\" value=\"1\" min=\"1\" max=\"3600\" oninput=\"updateCanvas()\" style=\"width:64px;background:#1a1a1a;border:1px solid #444;border-radius:6px;padding:6px 8px;color:#e0e0e0;font-size:13px\">\n    <\/div>\n    <div class=\"grid-row\" style=\"margin-top:2px\">\n      <span class=\"sublabel\" style=\"white-space:nowrap\">Intervals<\/span>\n      <select id=\"ticks-unit\" style=\"flex:1;margin-left:6px\" onchange=\"updateCanvas()\">\n        <option value=\"s\" selected>Secondes<\/option>\n        <option value=\"m\">Minutes<\/option>\n        <option value=\"h\">Heures<\/option>\n      <\/select>\n      <span class=\"sublabel\">tous les<\/span>\n      <input type=\"number\" id=\"ticks-interval\" value=\"10\" min=\"1\" max=\"3600\" oninput=\"updateCanvas()\" style=\"width:64px;background:#1a1a1a;border:1px solid #444;border-radius:6px;padding:6px 8px;color:#e0e0e0;font-size:13px\">\n    <\/div>\n  <\/div>\n\n  <div class=\"group\">\n    <label>Apparence<\/label>\n    <div style=\"display:flex;align-items:center;justify-content:space-between\">\n      <span class=\"sublabel\" style=\"min-width:64px\">Fond<\/span>\n      <input type=\"color\" id=\"bg-color\" value=\"#000000\" style=\"flex:1\" oninput=\"updateCanvas()\">\n    <\/div>\n    <div style=\"display:flex;align-items:center;justify-content:space-between\">\n      <span class=\"sublabel\" style=\"min-width:64px\">Waveform<\/span>\n      <input type=\"color\" id=\"wave-color\" value=\"#888888\" style=\"flex:1\" oninput=\"updateCanvas()\">\n    <\/div>\n    <div style=\"display:flex;align-items:center;justify-content:space-between\">\n      <span class=\"sublabel\" style=\"min-width:64px\">Grille<\/span>\n      <input type=\"color\" id=\"grid-color\" value=\"#ffffff\" style=\"flex:1\" oninput=\"updateCanvas()\">\n    <\/div>\n  <\/div>\n\n  <div class=\"group\">\n    <div style=\"display:flex;align-items:center;gap:0\">\n      <label style=\"margin:0;white-space:nowrap;font-size:13px;font-weight:600;color:#ccc\">Texte<\/label>\n      <div style=\"display:flex;align-items:center;gap:4px;margin-left:28px;flex:1\">\n        <input type=\"range\" id=\"font-size\" min=\"6\" max=\"72\" value=\"25\" style=\"flex:1;min-width:0\" oninput=\"document.getElementById('font-size-num').value=this.value;updateCanvas()\">\n        <input type=\"number\" id=\"font-size-num\" value=\"25\" min=\"6\" max=\"72\" oninput=\"var v=Math.min(72,Math.max(6,+this.value||25));document.getElementById('font-size').value=v;updateCanvas()\" style=\"width:44px;background:#1a1a1a;border:1px solid #444;border-radius:6px;padding:4px 6px;color:#e0e0e0;font-size:12px;text-align:center\">\n        <span class=\"sublabel\">px<\/span>\n      <\/div>\n    <\/div>\n    <label class=\"check-label\">\n      <input type=\"checkbox\" id=\"grid-visible\" checked style=\"accent-color:#5865f2\" onchange=\"updateCanvas()\"> Afficher la grille\n    <\/label>\n    <label class=\"check-label\">\n      <input type=\"checkbox\" id=\"ticks-visible\" checked style=\"accent-color:#5865f2\" onchange=\"updateCanvas()\"> Afficher les intervals\n    <\/label>\n    <label class=\"check-label\">\n      <input type=\"checkbox\" id=\"filename-visible\" checked style=\"accent-color:#5865f2\" onchange=\"updateCanvas()\"> Afficher le nom de la piste\n    <\/label>\n  <\/div>\n\n  <div class=\"group\" style=\"margin-top:auto;padding-top:8px;border-top:1px solid #333;display:flex;flex-direction:column;gap:8px\">\n    <button class=\"btn-export btn-svg\" id=\"export-svg\">Exporter SVG<\/button>\n    <button class=\"btn-export btn-png\" id=\"export-png\">Exporter PNG<\/button>\n  <\/div>\n<\/div>\n\n<div id=\"main\">\n  <div id=\"zoom-panel\">\n    <div id=\"zoom-panel-header\">\n      <span id=\"zoom-label\">Zoom sélection<\/span>\n      <button id=\"zoom-close\">✕<\/button>\n    <\/div>\n    <div id=\"zoom-canvas-wrap\">\n      <canvas id=\"zoom-canvas\"><\/canvas>\n    <\/div>\n  <\/div>\n  <div id=\"canvas-wrap\">\n    <canvas id=\"wc\"><\/canvas>\n    <div id=\"sel-overlay\"><div id=\"sel-rect\"><\/div><\/div>\n    <div id=\"drop-hint\">\n      <svg width=\"48\" height=\"48\" fill=\"none\" stroke=\"#888\" stroke-width=\"1.5\" viewBox=\"0 0 24 24\"><path d=\"M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z\"/><\/svg>\n      <p>Chargez ou déposez un fichier audio<br>pour commencer<\/p>\n    <\/div>\n  <\/div>\n<\/div>\n\n<script>\nconst canvas = document.getElementById('wc');\nconst ctx = canvas.getContext('2d');\nconst MAX_W = Math.round((window.innerWidth - 280) * 0.9);\nlet peaks = null, audioDuration = 0, audioFilename = '';\n\nfunction getParams() {\n  return {\n    w: Math.max(100, +document.getElementById('w').value || 4500),\n    h: Math.max(40, +document.getElementById('h').value || 400),\n    repeat: Math.max(1, +document.getElementById('repeat-count').value || 1),\n    style: document.getElementById('waveform-style').value,\n    bgColor: document.getElementById('bg-color').value,\n    waveColor: document.getElementById('wave-color').value,\n    gridColor: document.getElementById('grid-color').value,\n    gridVisible: document.getElementById('grid-visible').checked,\n    ticksVisible: document.getElementById('ticks-visible').checked,\n    filenameVisible: document.getElementById('filename-visible').checked,\n    gridInterval: +document.getElementById('grid-interval').value || 1,\n    gridUnit: document.getElementById('grid-unit').value,\n    ticksInterval: +document.getElementById('ticks-interval').value || 10,\n    ticksUnit: document.getElementById('ticks-unit').value,\n    fontSize: +document.getElementById('font-size').value || 25\n  };\n}\n\nfunction intervalSec(unit, val) {\n  return unit === 'h' ? val * 3600 : unit === 'm' ? val * 60 : val;\n}\n\nfunction fmtTime(t, gridUnit) {\n  if (gridUnit === 'h' || t >= 3600)\n    return `${Math.floor(t/3600)}:${String(Math.floor((t%3600)/60)).padStart(2,'0')}:${String(Math.round(t%60)).padStart(2,'0')}`;\n  if (gridUnit === 'm' || t >= 60)\n    return `${Math.floor(t/60)}:${String(Math.round(t%60)).padStart(2,'0')}`;\n  return `${Math.round(t)}s`;\n}\n\nfunction hexToRgba(hex, a) {\n  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);\n  return `rgba(${r},${g},${b},${a})`;\n}\n\nfunction computePeaks(channelData, samples) {\n  const p = [], blockSize = Math.floor(channelData.length / samples);\n  for (let i = 0; i < samples; i++) {\n    let max = 0, offset = i * blockSize;\n    for (let j = 0; j < blockSize; j++) { const v = Math.abs(channelData[offset+j]||0); if(v>max) max=v; }\n    p.push(max);\n  }\n  return p;\n}\n\n// Core render — draws everything into any context at full resolution\nfunction renderToContext(cx, W, H, p) {\n  const sliceW = W / p.repeat;\n  const totalDur = audioDuration * p.repeat;\n  const gIntervalSec = intervalSec(p.gridUnit, p.gridInterval);\n  const tIntervalSec = intervalSec(p.ticksUnit, p.ticksInterval);\n  const tickH = Math.round(H * 0.125);\n\n  // Background\n  cx.fillStyle = p.bgColor;\n  cx.fillRect(0, 0, W, H);\n\n  // Waveform — N slices\n  if (peaks && peaks.length > 0) {\n    const samples = peaks.length;\n    cx.fillStyle = p.waveColor;\n    for (let r = 0; r < p.repeat; r++) {\n      const ox = r * sliceW;\n      for (let i = 0; i < samples; i++) {\n        const x = ox + Math.round((i / samples) * sliceW);\n        const bw = Math.max(1, Math.ceil(sliceW / samples));\n        const amp = peaks[i] * H * 0.9;\n        if (p.style === 'mirror') { const hh=amp/2; cx.fillRect(x, H/2-hh, bw, Math.max(1,amp)); }\n        else if (p.style === 'top') { cx.fillRect(x, H-amp, bw, Math.max(1,amp)); }\n        else { cx.fillRect(x, 0, bw, Math.max(1,amp)); }\n      }\n    }\n  }\n\n  // Grid\n  if (p.gridVisible && audioDuration > 0) {\n    cx.font = `${p.fontSize}px system-ui`;\n\n    // Ticks (intervals)\n    if (p.ticksVisible) {\n      cx.strokeStyle = hexToRgba(p.gridColor, 0.5); cx.lineWidth = 0.5;\n      let t = 0;\n      while (t <= totalDur + tIntervalSec * 0.01) {\n        const onMain = Math.round(t / gIntervalSec) * gIntervalSec;\n        if (Math.abs(t - onMain) > tIntervalSec * 0.01) {\n          const x = Math.round((t / totalDur) * W);\n          cx.beginPath(); cx.moveTo(x,0); cx.lineTo(x,tickH); cx.stroke();\n        }\n        t += tIntervalSec;\n      }\n    }\n\n    // Main grid lines + labels\n    cx.strokeStyle = p.gridColor; cx.lineWidth = 1; cx.fillStyle = p.gridColor;\n    let t = 0;\n    while (t <= totalDur + gIntervalSec * 0.01) {\n      const x = Math.round((t / totalDur) * W);\n      cx.beginPath(); cx.moveTo(x,0); cx.lineTo(x,H); cx.stroke();\n      cx.fillText(fmtTime(t, p.gridUnit), x+3, p.fontSize+2);\n      t += gIntervalSec;\n    }\n  }\n\n  // Filename\n  if (p.filenameVisible && audioFilename) {\n    cx.font = `${p.fontSize}px system-ui`; cx.fillStyle = p.gridColor;\n    cx.fillText(audioFilename, 6, H-6);\n  }\n}\n\nfunction renderMain() {\n  const p = getParams();\n  const scale = Math.min(1, MAX_W / p.w);\n  canvas.width = Math.round(p.w * scale);\n  canvas.height = Math.round(p.h * scale);\n  canvas.style.width = canvas.width + 'px';\n  canvas.style.height = canvas.height + 'px';\n  ctx.setTransform(scale, 0, 0, scale, 0, 0);\n  renderToContext(ctx, p.w, p.h, p);\n}\n\nfunction updateCanvas() {\n  renderMain();\n  if (zoomPanel.style.display === 'flex' && dragStart !== null && dragEnd !== null) renderZoom();\n}\n\n// ── Zoom ─────────────────────────────────────────────────────\nconst wrap = document.getElementById('canvas-wrap');\nconst selRect = document.getElementById('sel-rect');\nconst zoomPanel = document.getElementById('zoom-panel');\nconst zoomCanvas = document.getElementById('zoom-canvas');\nconst zoomCtx = zoomCanvas.getContext('2d');\nconst zoomLabel = document.getElementById('zoom-label');\nlet dragStart = null, dragEnd = null, isDragging = false;\n\nfunction canvasRatio() { return getParams().w / canvas.width; }\n\ncanvas.addEventListener('mousedown', e => {\n  if (!peaks) return;\n  const rect = canvas.getBoundingClientRect();\n  dragStart = e.clientX - rect.left; dragEnd = dragStart; isDragging = true;\n  selRect.style.display = 'block'; selRect.style.left = dragStart+'px'; selRect.style.width = '0px';\n  wrap.classList.add('selecting');\n});\nwindow.addEventListener('mousemove', e => {\n  if (!isDragging) return;\n  const rect = canvas.getBoundingClientRect();\n  dragEnd = Math.min(Math.max(e.clientX - rect.left, 0), canvas.width);\n  const x = Math.min(dragStart,dragEnd), w = Math.abs(dragEnd-dragStart);\n  selRect.style.left = x+'px'; selRect.style.width = w+'px';\n});\nwindow.addEventListener('mouseup', () => {\n  if (!isDragging) return;\n  isDragging = false; wrap.classList.remove('selecting');\n  if (Math.abs(dragEnd-dragStart) < 4) { selRect.style.display='none'; return; }\n  renderZoom();\n});\n\nfunction renderZoom() {\n  const p = getParams();\n  const ratio = canvasRatio();\n  const x0 = Math.round(Math.min(dragStart,dragEnd)*ratio);\n  const x1 = Math.round(Math.max(dragStart,dragEnd)*ratio);\n  const sliceW = x1 - x0; if (sliceW < 1) return;\n  const off = document.createElement('canvas');\n  off.width = p.w; off.height = p.h;\n  renderToContext(off.getContext('2d'), p.w, p.h, p);\n  zoomCanvas.width = sliceW; zoomCanvas.height = p.h;\n  zoomCanvas.style.width = sliceW+'px'; zoomCanvas.style.height = p.h+'px';\n  zoomCtx.drawImage(off, x0, 0, sliceW, p.h, 0, 0, sliceW, p.h);\n  if (audioDuration > 0) {\n    const totalDur = audioDuration * p.repeat;\n    const t0 = (x0/p.w)*totalDur, t1 = (x1/p.w)*totalDur, dur = t1-t0;\n    const fmt = t => fmtTime(t, p.gridUnit);\n    const fmtDur = d => d>=3600?`${Math.floor(d/3600)}h ${Math.floor((d%3600)/60)}min`:d>=60?`${Math.floor(d/60)}min ${d.toFixed(1)}s`:`${d.toFixed(1)}s`;\n    zoomLabel.textContent = `${fmt(t0)} → ${fmt(t1)}  ·  ${fmtDur(dur)}`;\n  }\n  zoomPanel.style.display = 'flex';\n  zoomPanel.style.width = sliceW+'px';\n}\n\ndocument.getElementById('zoom-close').addEventListener('click', () => {\n  zoomPanel.style.display='none'; selRect.style.display='none'; dragStart=null; dragEnd=null;\n});\n\n// ── File load ─────────────────────────────────────────────────\nasync function loadAudioFile(file) {\n  if (!file) return;\n  audioFilename = file.name.replace(/\\.[^/.]+$/,'');\n  document.getElementById('duration-label').textContent='Chargement…';\n  document.getElementById('drop-hint').style.display='none';\n  const buf = await file.arrayBuffer();\n  const audioCtx = new AudioContext();\n  const decoded = await audioCtx.decodeAudioData(buf);\n  audioDuration = decoded.duration;\n  const samples = Math.max(200, Math.min(4000, +document.getElementById('w').value));\n  peaks = computePeaks(decoded.getChannelData(0), samples);\n  const m=Math.floor(audioDuration/60), s=Math.round(audioDuration%60);\n  document.getElementById('duration-label').textContent=`Durée: ${m}:${String(s).padStart(2,'0')} — ${Math.round(audioDuration)}s`;\n  updateCanvas();\n}\n\ndocument.getElementById('file-input').addEventListener('change', e=>loadAudioFile(e.target.files[0]));\n\nconst uploadBtn=document.getElementById('upload-btn');\n['dragenter','dragover'].forEach(ev=>uploadBtn.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();uploadBtn.classList.add('drag-over');}));\n['dragleave','dragend'].forEach(ev=>uploadBtn.addEventListener(ev,()=>uploadBtn.classList.remove('drag-over')));\nuploadBtn.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();uploadBtn.classList.remove('drag-over');loadAudioFile(e.dataTransfer.files[0]);});\n\n['dragenter','dragover'].forEach(ev=>wrap.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();wrap.classList.add('drag-over');}));\n['dragleave','dragend'].forEach(ev=>wrap.addEventListener(ev,()=>wrap.classList.remove('drag-over')));\nwrap.addEventListener('drop',e=>{e.preventDefault();e.stopPropagation();wrap.classList.remove('drag-over');loadAudioFile(e.dataTransfer.files[0]);});\n\n// ── Export PNG ────────────────────────────────────────────────\ndocument.getElementById('export-png').addEventListener('click', () => {\n  const p = getParams();\n  const off = document.createElement('canvas');\n  off.width = p.w; off.height = p.h;\n  renderToContext(off.getContext('2d'), p.w, p.h, p);\n  const a = document.createElement('a');\n  a.href = off.toDataURL('image/png');\n  a.download = 'MN_WAVEFORM_GENERATOR_V1.9.png';\n  a.click();\n});\n\n// ── Export SVG ────────────────────────────────────────────────\ndocument.getElementById('export-svg').addEventListener('click', () => {\n  const p = getParams();\n  const W=p.w, H=p.h, sliceW=W/p.repeat;\n  const totalDur = audioDuration * p.repeat;\n  const gIntervalSec = intervalSec(p.gridUnit, p.gridInterval);\n  const tIntervalSec = intervalSec(p.ticksUnit, p.ticksInterval);\n  const tickH = Math.round(H*0.125);\n  let out='';\n\n  // Ticks\n  if (p.gridVisible && p.ticksVisible && audioDuration>0) {\n    let t=0;\n    while(t<=totalDur+tIntervalSec*0.01){\n      const onMain=Math.round(t/gIntervalSec)*gIntervalSec;\n      if(Math.abs(t-onMain)>tIntervalSec*0.01){\n        const x=((t/totalDur)*W).toFixed(1);\n        out+=`<line x1=\"${x}\" y1=\"0\" x2=\"${x}\" y2=\"${tickH}\" stroke=\"${p.gridColor}\" stroke-width=\"0.5\" opacity=\"0.5\"/>\\n`;\n      }\n      t+=tIntervalSec;\n    }\n  }\n  // Main grid\n  if (p.gridVisible && audioDuration>0) {\n    let t=0;\n    while(t<=totalDur+gIntervalSec*0.01){\n      const x=((t/totalDur)*W).toFixed(1);\n      out+=`<line x1=\"${x}\" y1=\"0\" x2=\"${x}\" y2=\"${H}\" stroke=\"${p.gridColor}\" stroke-width=\"1\"/>\\n`;\n      out+=`<text x=\"${(+x+3).toFixed(1)}\" y=\"${p.fontSize+2}\" font-size=\"${p.fontSize}\" fill=\"${p.gridColor}\" font-family=\"system-ui\">${fmtTime(t,p.gridUnit)}<\/text>\\n`;\n      t+=gIntervalSec;\n    }\n  }\n  // Waveform\n  if (peaks) {\n    const samples=peaks.length;\n    for(let r=0;r<p.repeat;r++){\n      const ox=r*sliceW;\n      for(let i=0;i<samples;i++){\n        const x=(ox+Math.round((i/samples)*sliceW)).toFixed(1);\n        const bw=Math.max(1,sliceW/samples).toFixed(1);\n        const amp=peaks[i]*H*0.9;\n        let y,h;\n        if(p.style==='mirror'){h=amp/2;y=(H/2-h).toFixed(1);}\n        else if(p.style==='top'){h=amp;y=(H-amp).toFixed(1);}\n        else{h=amp;y='0';}\n        out+=`<rect x=\"${x}\" y=\"${y}\" width=\"${bw}\" height=\"${Math.max(1,h).toFixed(1)}\" fill=\"${p.waveColor}\"/>\\n`;\n      }\n    }\n  }\n  if(p.filenameVisible&&audioFilename)\n    out+=`<text x=\"6\" y=\"${H-6}\" font-size=\"${p.fontSize}\" fill=\"${p.gridColor}\" font-family=\"system-ui\">${audioFilename}<\/text>\\n`;\n\n  const svg=`<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"${W}\" height=\"${H}\" viewBox=\"0 0 ${W} ${H}\">\\n<rect width=\"${W}\" height=\"${H}\" fill=\"${p.bgColor}\"/>\\n${out}<\/svg>`;\n  const blob=new Blob([svg],{type:'image/svg+xml'});\n  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='MN_WAVEFORM_GENERATOR_V1.9.svg';a.click();\n});\n\nrenderMain();\n<\/script>\n<\/body>\n<\/html>\n"}];
+const ANCIENS_PARCOURS=['Arrivée au studio : stagiaires','Arrivée au studio : freelances','Retour d’un freelance'];
+function accueilAFaire(){
   const manq=ACCUEIL.fiches.filter(f=>!parSlug(f.slug));
-  if(!confirm(`Importer ${manq.length} fiche(s) d’accueil et les parcours « stagiaires », « freelances » et « retour » ?\nLes fiches qui existent déjà ne sont pas modifiées.`))return;
+  const anciens=Object.entries(PARC).filter(([,p])=>p&&ANCIENS_PARCOURS.includes(tr(p.titre,'fr'))).map(([id])=>id);
+  const fusion=Object.entries(PARC).find(([,p])=>p&&tr(p.titre,'fr')===ACCUEIL.parcours.titre.fr);
+  const parts=[];
+  if(manq.length) parts.push(`${manq.length} fiche(s) d’accueil à importer`);
+  if(!fusion) parts.push('le parcours « Arrivée au studio » à créer (un seul parcours, filtré par profil)');
+  if(anciens.length) parts.push(`${anciens.length} ancien(s) parcours à remplacer`);
+  const oManq=OUTILS_PROPOSES.filter(o=>!outilParSlug(o.slug));
+  if(oManq.length) parts.push(`${oManq.length} outil(s) à ajouter (${oManq.map(o=>o.titre.fr).join(', ')})`);
+  return {manq,anciens,fusion,oManq,afaire:parts.length>0,msg:parts.length?'Accueil : '+parts.join(', ')+'.':''};
+}
+async function importerAccueil(){
+  const a=accueilAFaire();
+  if(!confirm(a.msg+'\nLes fiches qui existent déjà ne sont pas modifiées. Continuer ?'))return;
   const now=Date.now(), maj={}, ids={};
   Object.values(FICHES).forEach(f=>{if(f&&f.slug)ids[f.slug]=f.id;});
-  manq.forEach((f,i)=>{const id=uid('f');ids[f.slug]=id;
-    maj['fiches/'+id]={id,slug:f.slug,titre:f.titre,resume:f.resume,contenu:f.contenu,categorie:'Accueil',tags:f.tags,outils:f.outils,
+  a.manq.forEach((f,i)=>{const id=uid('f');ids[f.slug]=id;
+    maj['fiches/'+id]={id,slug:f.slug,titre:f.titre,resume:f.resume,contenu:f.contenu,categorie:f.categorie||'Accueil',tags:f.tags,outils:f.outils,
       relireMois:6,relireLe:addMonths(today(),6),archive:false,creeLe:now+i,majLe:now+i,majPar:ME};});
-  const existants=Object.values(PARC).map(p=>p&&tr(p.titre,'fr'));
-  ACCUEIL.parcours.forEach((p,i)=>{ if(existants.includes(p.titre.fr)) return;
-    maj['parcours/'+uid('p')]={titre:p.titre,description:p.description,fiches:p.slugs.map(s=>ids[s]).filter(Boolean),ordre:i,majLe:now};});
-  try{await update(ref(db,'wiki'),maj);toast(`${manq.length} fiche(s) importée(s)`);}catch(e){alert('Échec de l’import : '+e.message);}
+  a.anciens.forEach(id=>{maj['parcours/'+id]=null;});
+  const P0=ACCUEIL.parcours, fiches=[], publics={};
+  P0.etapes.forEach(e=>{const id=ids[e.slug]; if(!id) return; fiches.push(id); if(e.pour) publics[id]=e.pour;});
+  maj['parcours/'+(a.fusion?a.fusion[0]:uid('p'))]={titre:P0.titre,description:P0.description,profils:P0.profils,fiches,publics,ordre:0,majLe:now};
+  try{
+    for(const o of a.oManq){ const id=uid('o');
+      await set(ref(db,'wikiOutilsCode/'+id),o.code); CODE[id]=o.code;
+      maj['outils/'+id]={id,slug:o.slug,titre:o.titre,description:o.description,archive:false,fichier:o.fichier,taille:o.code.length,version:1,creeLe:now,majLe:now,majPar:ME}; }
+    await update(ref(db,'wiki'),maj);toast('Accueil mis à jour');
+  }catch(e){alert('Échec : '+e.message);}
+}
+
+/* ═══ OUTILS (petites applis HTML du studio) ═══
+   Le fichier HTML est stocké dans wikiOutilsCode/<id> et ouvert dans un cadre isolé (sandbox, sans accès au wiki ni à la session). */
+const fmtKo=n=>n>1048576?(n/1048576).toFixed(1).replace('.',',')+' Mo':Math.max(1,Math.round(n/1024))+' Ko';
+const outilParSlug=sl=>Object.values(APPLIS).find(o=>o&&o.slug===sl);
+function vOutils(){
+  const l=Object.values(APPLIS).filter(o=>o&&(EDIT||!o.archive)).sort((a,b)=>tr(a.titre).localeCompare(tr(b.titre),'fr'));
+  $('#main').innerHTML=`<div class="edbar"><strong style="font-size:20px">${esc(t().choixO)}</strong><span class="spacer"></span>
+      ${EDIT?'<button class="btn p" id="o-new">Ajouter un outil</button>':''}</div>
+    <p class="hint" style="margin:-8px 0 18px">${esc(t().choixOP)}</p>
+    ${l.length?`<div class="parc">${l.map(o=>`<a href="#outil-${esc(o.slug)}"><div class="it">${esc(tr(o.titre))}${o.archive?' (archivé)':''}</div>
+      ${tr(o.description)?`<div class="ir">${esc(tr(o.description))}</div>`:''}<div class="im">${esc(fmtD(o.majLe))}</div></a>`).join('')}</div>`
+      :`<div class="empty">${esc(t().outilsVide)}</div>`}`;
+  const n=$('#o-new'); if(n) n.onclick=()=>go('oedit',{id:null});
+}
+async function vOutil(){
+  const o=outilParSlug(vue.slug);
+  if(!o||(o.archive&&!EDIT)){$('#main').innerHTML=`<div class="empty">${esc(t().outilIntrouvable)} <a href="#outils">${esc(t().choixO)}</a></div>`;return;}
+  document.title=tr(o.titre)+' · Wiki';
+  $('#main').innerHTML=`<div class="crumb"><a href="#outils">${esc(t().choixO)}</a></div>
+    <div class="edbar"><strong style="font-size:22px">${esc(tr(o.titre))}</strong><span class="spacer"></span>
+      <button class="btn" id="o-fs">${esc(t().pleinEcran)}</button><button class="btn" id="o-dl">${esc(t().telecharger)}</button>
+      ${EDIT?`<button class="btn" id="o-ed">Modifier</button><button class="btn${o.archive?'':' d'}" id="o-ar">${o.archive?'Désarchiver':'Archiver'}</button>`:''}</div>
+    ${tr(o.description)?`<p class="hint" style="margin:-8px 0 12px">${esc(tr(o.description))}</p>`:''}
+    <div class="ofr" id="ofr"><div class="empty">…</div></div>`;
+  if(!(o.id in CODE)){try{CODE[o.id]=(await get(ref(db,'wikiOutilsCode/'+o.id))).val()||'';}catch(e){CODE[o.id]=null;}}
+  if(vue.k!=='outil'||vue.slug!==o.slug) return;
+  const code=CODE[o.id];
+  if(!code){$('#ofr').innerHTML=`<div class="notice err">Le fichier de cet outil est introuvable.</div>`;return;}
+  const fr=document.createElement('iframe');
+  fr.setAttribute('sandbox','allow-scripts allow-downloads allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-pointer-lock');
+  fr.setAttribute('allow','fullscreen; clipboard-write; autoplay');
+  fr.title=tr(o.titre); fr.srcdoc=code;
+  $('#ofr').innerHTML=''; $('#ofr').appendChild(fr);
+  $('#o-fs').onclick=()=>{const c=$('#ofr'); (c.requestFullscreen||c.webkitRequestFullscreen||(()=>{})).call(c);};
+  $('#o-dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([code],{type:'text/html'}));
+    a.download=(o.fichier||o.slug+'.html');document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);};
+  const ed=$('#o-ed'); if(ed) ed.onclick=()=>go('oedit',{id:o.id});
+  const ar=$('#o-ar'); if(ar) ar.onclick=async()=>{
+    if(!o.archive&&!confirm('Archiver cet outil ? Il ne sera plus visible par l’équipe (rien n’est supprimé).'))return;
+    try{await update(ref(db,'wiki/outils/'+o.id),{archive:!o.archive});toast(o.archive?'Outil désarchivé':'Outil archivé');}catch(e){alert(e.message);}
+  };
+}
+let O=null;
+function vOEdit(){
+  if(!EDIT){go('outils');return;}
+  const src=vue.id?APPLIS[vue.id]:null;
+  if(!O||O._for!==(vue.id||'new')) O={_for:vue.id||'new',titre:{fr:'',en:''},description:{fr:'',en:''},...(src?JSON.parse(JSON.stringify(src)):{}),code:null,fichierNouveau:null};
+  $('#main').innerHTML=`<div class="edbar"><strong>${src?'Modifier l’outil':'Ajouter un outil'}</strong><span class="spacer"></span>
+      <button class="btn" id="oe-x">Annuler</button><button class="btn p" id="oe-ok">Enregistrer</button></div>
+    <div class="ed" style="grid-template-columns:1fr"><div>
+      <div class="two"><div><label>Nom (FR)</label><input id="oe-tfr" value="${esc(O.titre.fr)}" placeholder="ex. Générateur de waveform"></div>
+        <div><label>Nom (EN)</label><input id="oe-ten" value="${esc(O.titre.en)}"></div></div>
+      <div class="two"><div><label>À quoi il sert (FR)</label><input id="oe-dfr" value="${esc(O.description.fr)}"></div>
+        <div><label>À quoi il sert (EN)</label><input id="oe-den" value="${esc(O.description.en)}"></div></div>
+      <label>Fichier HTML ${src?'(laisser vide pour garder le fichier actuel : '+esc(src.fichier||'')+', '+esc(fmtKo(src.taille||0))+')':''}</label>
+      <input type="file" id="oe-f" accept=".html,.htm,text/html">
+      <p class="hint" id="oe-info">${O.fichierNouveau?esc(O.fichierNouveau+' · '+fmtKo(O.code.length)):'Un seul fichier HTML autonome (styles et scripts inclus). 5 Mo maximum.'}</p>
+    </div></div>`;
+  const b=(sel,fn)=>{$(sel).oninput=e=>fn(e.target.value);};
+  b('#oe-tfr',v=>O.titre.fr=v);b('#oe-ten',v=>O.titre.en=v);b('#oe-dfr',v=>O.description.fr=v);b('#oe-den',v=>O.description.en=v);
+  $('#oe-f').onchange=async e=>{const f=e.target.files[0]; if(!f) return;
+    if(f.size>5*1048576){alert('Fichier trop lourd (5 Mo maximum).');e.target.value='';return;}
+    O.code=await f.text(); O.fichierNouveau=f.name;
+    if(!O.titre.fr){const m=O.code.match(/<title>([^<]*)<\/title>/i); if(m){O.titre.fr=m[1].trim();$('#oe-tfr').value=O.titre.fr;}}
+    $('#oe-info').textContent=f.name+' · '+fmtKo(O.code.length)+(/localStorage|sessionStorage|indexedDB/.test(O.code)?' · attention : cet outil utilise le stockage du navigateur, qui est bloqué dans le wiki':'');
+  };
+  $('#oe-x').onclick=()=>{O=null;src?(location.hash='outil-'+src.slug,route()):go('outils');};
+  $('#oe-ok').onclick=async()=>{
+    if(!O.titre.fr.trim()){alert('Le nom en français est obligatoire.');return;}
+    if(!src&&!O.code){alert('Choisis le fichier HTML de l’outil.');return;}
+    const id=src?src.id:uid('o'), now=Date.now();
+    let slug=src?src.slug:slugify(O.titre.fr);
+    if(!src){let n=2;const base=slug;while(outilParSlug(slug))slug=base+'-'+(n++);}
+    const meta={id,slug,titre:O.titre,description:O.description,archive:!!(src&&src.archive),
+      fichier:O.fichierNouveau||(src&&src.fichier)||slug+'.html',taille:O.code?O.code.length:(src&&src.taille)||0,
+      version:(src&&src.version||0)+(O.code?1:0),creeLe:(src&&src.creeLe)||now,majLe:now,majPar:ME};
+    try{
+      if(O.code){
+        if(src){const prev=CODE[id]!==undefined?CODE[id]:(await get(ref(db,'wikiOutilsCode/'+id))).val();
+          if(prev) await set(ref(db,`wikiHistorique/outil-${id}/${src.majLe||now-1}`),{code:prev,fichier:src.fichier||'',version:src.version||1,majPar:src.majPar||''});}
+        await set(ref(db,'wikiOutilsCode/'+id),O.code); CODE[id]=O.code;
+      }
+      await set(ref(db,'wiki/outils/'+id),meta);
+      O=null; toast('Outil enregistré'); location.hash='outil-'+slug; route();
+    }catch(e){alert('Non enregistré : '+e.message);}
+  };
 }
 
 /* ═══ CHECKLISTS DIRECTION (arrivée d'un stagiaire / d'un freelance) ═══

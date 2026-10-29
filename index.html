@@ -3,117 +3,201 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Matiere Noire · Outils</title>
+<title>Matiere Noire · Wiki</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
 <style>
 :root{
   --paper:#F7F7F5; --ink:#14161A; --ink2:#5C6169; --ink3:#8C9199;
   --rule:#DDDEDA; --rule2:#EDEEEA; --card:#FFFFFF;
   --live:#2F6F4F; --warn:#B4711E; --stop:#A63A2B;
-  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   --sans:"Helvetica Neue",Inter,system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;
-  min-height:100vh;display:flex;flex-direction:column}
-button{font:inherit;color:inherit}
-a{color:inherit;text-decoration:none}
+html{scroll-padding-top:70px}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 
-header{padding:44px 26px 0;max-width:940px;width:100%;margin:0 auto}
-.mark{font-size:12px;letter-spacing:.34em;text-transform:uppercase;font-weight:600;margin:0}
-.mark small{display:block;letter-spacing:.08em;font-size:11px;font-weight:400;color:var(--ink3);
-  text-transform:none;margin-top:6px;font-family:var(--mono)}
-main{padding:34px 26px 60px;max-width:940px;width:100%;margin:0 auto;flex:1}
-
-h2{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:600;
-  margin:0 0 12px;display:flex;align-items:center;gap:10px}
-h2::after{content:'';flex:1;height:1px;background:var(--rule)}
-section{margin-bottom:34px}
-
-.tools{display:grid;gap:11px;grid-template-columns:repeat(auto-fit,minmax(268px,1fr))}
-.tool{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:17px 18px;
-  display:block;transition:border-color .13s,transform .13s}
-.tool:hover{border-color:var(--ink);transform:translateY(-1px)}
-.tool .t{font-size:15px;font-weight:500;margin-bottom:3px;display:flex;align-items:baseline;gap:8px}
-.tool .d{font-size:13px;color:var(--ink2)}
-.tool .m{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--ink3);margin-top:9px}
-.tool.off{opacity:.45;pointer-events:none}
-.pill{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;
-  border:1px solid var(--rule);border-radius:2px;padding:1px 6px;color:var(--ink3)}
-.pill.k{border-color:var(--warn);color:var(--warn)}
-
-.auth{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:17px 18px;
-  display:flex;gap:14px;align-items:center;flex-wrap:wrap}
-.auth .who{font-family:var(--mono);font-size:11px;color:var(--ink3);flex:1}
-.btn{border:1px solid var(--rule);background:var(--paper);border-radius:3px;padding:6px 13px;cursor:pointer;font-size:13px}
+/* ── en-tête ── */
+header{position:sticky;top:0;z-index:20;background:var(--paper);border-bottom:1px solid var(--rule);
+  display:flex;align-items:center;gap:14px;padding:12px 24px;flex-wrap:wrap}
+.brand{font-size:15px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;text-decoration:none}
+.brand small{font-weight:400;letter-spacing:.04em;text-transform:none;color:var(--ink3);margin-left:8px;font-size:12px}
+#q{flex:1;min-width:180px;max-width:420px;border:1px solid var(--rule);background:var(--card);border-radius:3px;padding:7px 10px}
+#q:focus{outline:none;border-color:var(--ink)}
+.spacer{flex:1}
+.lang{display:flex;border:1px solid var(--rule);border-radius:3px;overflow:hidden}
+.lang button{border:0;background:none;padding:5px 9px;font-size:12px;cursor:pointer;color:var(--ink3)}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.adm{display:flex;gap:6px;flex-wrap:wrap}
+.btn{border:1px solid var(--rule);background:var(--card);border-radius:3px;padding:6px 12px;cursor:pointer;font-size:13px;text-decoration:none;display:inline-block}
 .btn:hover{border-color:var(--ink3)}
 .btn.p{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.err{color:var(--stop);font-size:12px;width:100%;margin:0}
+.btn.d{color:var(--stop)}
+.btn .n{display:inline-block;min-width:18px;padding:0 5px;margin-left:5px;border-radius:9px;background:var(--stop);color:#fff;font-size:11px;text-align:center}
+.btn:disabled{opacity:.4;cursor:not-allowed}
 
-footer{border-top:1px solid var(--rule);padding:16px 26px;max-width:940px;width:100%;margin:0 auto;
-  font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--ink3);
-  display:flex;gap:16px;flex-wrap:wrap}
-@media(max-width:600px){header{padding-top:30px}main{padding-top:26px}}
+/* ── structure ── */
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr);gap:40px;max-width:1180px;padding:28px 24px 80px}
+aside{font-size:14px;position:sticky;top:76px;align-self:start;max-height:calc(100vh - 90px);overflow:auto}
+aside h3{font-size:12px;font-weight:600;color:var(--ink3);margin:0 0 6px}
+aside ul{list-style:none;margin:0 0 24px;padding:0}
+aside li a{display:flex;justify-content:space-between;gap:8px;padding:4px 0;text-decoration:none;color:var(--ink2)}
+aside li a:hover,aside li a.on{color:var(--ink)}
+aside li a.on{font-weight:600}
+aside li a span{color:var(--ink3);font-variant-numeric:tabular-nums}
+main{min-width:0}
+
+/* ── accueil ── */
+.hero{margin:0 0 34px;max-width:70ch}
+.hero h1{font-size:44px;line-height:1.05;letter-spacing:-.02em;font-weight:600;margin:0 0 12px}
+.hero p{color:var(--ink2);font-size:17px;margin:0}
+.sec{margin:0 0 36px}
+.sec>h2{font-size:20px;font-weight:600;letter-spacing:-.01em;margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid var(--rule)}
+.items{list-style:none;margin:0;padding:0}
+.items li{border-bottom:1px solid var(--rule2)}
+.items a{display:block;padding:11px 0;text-decoration:none}
+.items a:hover .it{text-decoration:underline}
+.it{font-weight:600}
+.ir{color:var(--ink2);font-size:14px;margin-top:2px;max-width:75ch}
+.im{color:var(--ink3);font-size:12px;margin-top:3px}
+.parc{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.parc a{display:block;border:1px solid var(--ink);border-radius:4px;padding:14px 16px;text-decoration:none;background:var(--card)}
+.parc a:hover{background:var(--ink);color:var(--paper)}
+.parc a:hover .ir,.parc a:hover .im{color:var(--rule)}
+.empty{color:var(--ink2);padding:30px 0}
+mark{background:#F1E6B8;color:inherit;padding:0 1px}
+
+/* ── fiche ── */
+.crumb{font-size:13px;color:var(--ink3);margin:0 0 10px}
+.crumb a{color:var(--ink2)}
+article{max-width:72ch}
+article>h1{font-size:38px;line-height:1.1;letter-spacing:-.02em;font-weight:600;margin:0 0 12px}
+.lead{font-size:18px;color:var(--ink2);margin:0 0 16px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:13px;color:var(--ink3);
+  padding:10px 0 14px;border-bottom:1px solid var(--rule);margin-bottom:26px}
+.chip{display:inline-block;border:1px solid var(--rule);border-radius:12px;padding:1px 9px;font-size:12px;color:var(--ink2);text-decoration:none;background:var(--card)}
+a.chip:hover{border-color:var(--ink)}
+.chip.tool{border-color:var(--live);color:var(--live)}
+.notice{background:#FFFDF6;border:1px solid #EADFC2;border-radius:4px;padding:9px 12px;font-size:13px;color:var(--ink2);margin:0 0 18px}
+.notice.err{background:#FCF3F1;border-color:#EBC9C2;color:var(--stop)}
+
+/* contenu rendu */
+.md{font-size:16px;line-height:1.65}
+.md h2{font-size:23px;letter-spacing:-.01em;margin:34px 0 10px;line-height:1.2}
+.md h3{font-size:18px;margin:26px 0 8px}
+.md p{margin:0 0 14px}
+.md a{color:var(--live);text-underline-offset:2px}
+.md ul{padding-left:20px;margin:0 0 16px}
+.md li{margin:3px 0}
+.md img{max-width:100%;height:auto;border:1px solid var(--rule);border-radius:4px;display:block;margin:12px 0}
+.md code{font-family:var(--mono);font-size:.88em;background:var(--rule2);padding:1px 5px;border-radius:3px}
+.md pre{background:var(--ink);color:var(--paper);padding:14px;border-radius:4px;overflow-x:auto}
+.md pre code{background:none;color:inherit;padding:0}
+.md blockquote{margin:16px 0;padding:10px 14px;border-left:3px solid var(--warn);background:#FFFDF6;color:var(--ink)}
+.md blockquote p:last-child{margin:0}
+.md table{border-collapse:collapse;margin:0 0 16px;display:block;overflow-x:auto}
+.md th,.md td{border:1px solid var(--rule);padding:5px 9px;text-align:left}
+.md hr{border:0;border-top:1px solid var(--rule);margin:26px 0}
+/* les étapes : la liste numérotée est le cœur d'un tuto */
+.md ol{list-style:none;counter-reset:step;padding:0;margin:4px 0 22px}
+.md ol>li{counter-increment:step;position:relative;padding:4px 0 14px 54px;margin:0;min-height:44px;border-left:1px solid var(--rule);margin-left:17px;padding-left:37px}
+.md ol>li:last-child{border-left-color:transparent}
+.md ol>li::before{content:counter(step);position:absolute;left:-18px;top:0;width:35px;height:35px;border-radius:50%;
+  background:var(--ink);color:var(--paper);font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+.md ol ol>li::before{background:var(--card);color:var(--ink);border:1px solid var(--ink)}
+
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin:34px 0 0;padding-top:16px;border-top:1px solid var(--rule)}
+.related{margin-top:30px}
+.related h2{font-size:15px;margin:0 0 6px}
+.pnav{display:flex;justify-content:space-between;gap:12px;margin:0 0 22px;padding:10px 14px;border:1px solid var(--ink);border-radius:4px;font-size:14px;background:var(--card);flex-wrap:wrap;align-items:center}
+.pnav a{text-decoration:none;font-weight:600}
+.box{border:1px solid var(--rule);background:var(--card);border-radius:4px;padding:14px;margin-top:14px}
+.box textarea{width:100%;min-height:90px;border:1px solid var(--rule);border-radius:3px;padding:8px}
+
+/* ── éditeur (Baptiste) ── */
+.ed{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+.ed label{display:block;font-size:12px;color:var(--ink2);margin:12px 0 4px}
+.ed input,.ed select,.ed textarea{width:100%;border:1px solid var(--rule);background:var(--card);border-radius:3px;padding:7px 9px}
+.ed input:focus,.ed textarea:focus,.ed select:focus{outline:none;border-color:var(--ink)}
+.ed textarea.body{min-height:460px;font-family:var(--mono);font-size:13px;line-height:1.55;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tabs{display:flex;gap:2px;margin:14px 0 0}
+.tabs button{border:1px solid var(--rule);border-bottom:0;background:var(--rule2);padding:5px 12px;border-radius:3px 3px 0 0;cursor:pointer;font-size:13px}
+.tabs button[aria-selected="true"]{background:var(--card);font-weight:600}
+.tb{display:flex;flex-wrap:wrap;gap:4px;padding:6px;border:1px solid var(--rule);border-bottom:0;background:var(--card)}
+.tb button{border:1px solid transparent;background:none;padding:3px 8px;border-radius:3px;cursor:pointer;font-size:12px}
+.tb button:hover{border-color:var(--rule)}
+.prev{border:1px dashed var(--rule);border-radius:4px;padding:18px;background:var(--card);max-height:820px;overflow:auto;position:sticky;top:76px}
+.tools{display:flex;flex-wrap:wrap;gap:6px}
+.tools label{display:inline-flex;gap:5px;align-items:center;margin:0;border:1px solid var(--rule);border-radius:12px;padding:2px 9px;font-size:12px;cursor:pointer;background:var(--card)}
+.tools input{width:auto}
+.edbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 18px}
+.hint{font-size:12px;color:var(--ink3);margin:4px 0 0}
+table.list{width:100%;border-collapse:collapse;font-size:14px}
+table.list th{text-align:left;font-size:12px;color:var(--ink3);font-weight:500;border-bottom:1px solid var(--rule);padding:6px 8px}
+table.list td{border-bottom:1px solid var(--rule2);padding:8px;vertical-align:top}
+.porder li{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--rule2)}
+.porder li span{flex:1}
+
+/* ── checklists direction ── */
+.bar{height:4px;background:var(--rule2);border-radius:2px;margin:6px 0 4px;max-width:420px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--live)}
+.bar.big{height:8px;max-width:none;margin:0 0 10px}
+ul.ck{list-style:none;margin:0;padding:0}
+ul.ck li{border-bottom:1px solid var(--rule2)}
+ul.ck label{display:flex;gap:12px;align-items:flex-start;padding:10px 0;cursor:pointer}
+ul.ck input{width:18px;height:18px;margin-top:2px;flex:none;accent-color:var(--live)}
+ul.ck li.done span{color:var(--ink3)}
+ul.ck small{display:block;font-size:12px;color:var(--live);margin-top:2px}
+
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:4px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.on{opacity:1}
+.modal{position:fixed;inset:0;background:rgba(20,22,26,.45);z-index:50;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
+.modal>div{background:var(--paper);border-radius:4px;max-width:760px;width:100%;padding:22px 24px}
+
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr;gap:18px;padding-top:18px}
+  aside{position:static;max-height:none;display:flex;flex-wrap:wrap;gap:0 26px}
+  aside ul{margin-bottom:10px}
+  .hero h1{font-size:34px} article>h1{font-size:30px}
+  .ed{grid-template-columns:1fr} .prev{position:static}
+}
+@media (prefers-reduced-motion:reduce){#toast{transition:none}}
+@media print{
+  header,aside,.actions,.pnav,.related,#toast,.box{display:none!important}
+  .layout{display:block;padding:0} body{background:#fff}
+  .md ol>li::before{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
 </style>
 </head>
 <body>
-
 <header>
-  <h1 class="mark">Matiere Noire<small>Outils internes du studio</small></h1>
+  <a class="brand" href="#">Wiki<small>Matiere Noire</small></a>
+  <input id="q" type="search" autocomplete="off">
+  <span class="spacer"></span>
+  <div class="adm" id="adm"></div>
+  <div class="lang"><button data-l="fr">FR</button><button data-l="en">EN</button></div>
 </header>
-
-<main>
-  <section>
-    <h2>Pour tout le monde</h2>
-    <div class="tools" id="pub"></div>
-  </section>
-
-  <section id="sec-dir">
-    <h2>Direction</h2>
-    <div id="auth-box"></div>
-    <div class="tools" id="dir" style="margin-top:11px"></div>
-  </section>
-</main>
-
-<footer>
-  <span>Matiere Noire · Paris</span>
-  <span id="ft"></span>
-</footer>
+<div class="layout">
+  <aside id="side"></aside>
+  <main id="main"></main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
 
 <script type="module">
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import {getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged}
-  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-
-/* ═══ à ajuster si un repo change de nom ═══ */
-const BASE='https://baptiste-mn.github.io';
-const PUBLIC=[
-  {t:'Time tracking',d:'Saisir ses heures, projet par projet.',u:BASE+'/time-matiere-noire/'},
-  {t:'Congés',d:'Poser une absence et suivre ses soldes.',u:BASE+'/conges-matiere-noire/'},
-  {t:'Planning',d:'Le planning partagé du studio.',u:BASE+'/planning-matiere-noire/'},
-  {t:'Notes',d:'Tableau de notes partagé par toute l’équipe.',u:BASE+'/notes-matiere-noire/'},
-  {t:'Wiki',d:'Les fiches pratiques du studio : outils, démarches, matériel.',u:BASE+'/wiki-matiere-noire/'},
-];
-const DIRECTION=[
-  {t:'Récap projets',d:'Marge des projets actifs, et son évolution sur 7 jours.',u:BASE+'/project-recap/'},
-  {t:'Rentabilité',d:'Marge par projet, par phase et par personne.',u:BASE+'/dashboard-matiere-noire/'},
-  {t:'Administration',d:'Personnes, projets, devis, CJM, alias.',u:BASE+'/admin-matiere-noire/'},
-  {t:'Bulletins de stage',d:'Gratifications mensuelles des stagiaires, export PDF.',u:BASE+'/paie-matiere-noire/'},
-];
-
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const carte=(x,off)=>`<a class="tool${off?' off':''}" ${off?'':`href="${esc(x.u)}"`}>
-  <div class="t">${esc(x.t)}${off?'<span class="pill k">verrouillé</span>':''}</div>
-  <div class="d">${esc(x.d)}</div></a>`;
-
-document.querySelector('#pub').innerHTML=PUBLIC.map(x=>carte(x,false)).join('');
+import {getDatabase,ref,onValue,get,set,update,push,remove} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
 const CFG={apiKey:"AIzaSyByf4SmnGJvfkkJVFhfINXikb8I8ge5VRU",
   authDomain:"matiere-noire-todo.firebaseapp.com",
   databaseURL:"https://matiere-noire-todo-default-rtdb.europe-west1.firebasedatabase.app",
   projectId:"matiere-noire-todo",storageBucket:"matiere-noire-todo.firebasestorage.app",
   messagingSenderId:"583651643354",appId:"1:583651643354:web:74b78c43316b9d657dfae3"};
-const auth=getAuth(initializeApp(CFG));
+const db=getDatabase(initializeApp(CFG));
 
 /* ═══ MN-GATE v1 — connexion Google obligatoire, liste d'accès /acces ═══
    Bloc identique dans tous les outils : à modifier partout à la fois.
@@ -178,44 +262,1047 @@ async function mnGate(){
   });
 }
 /* ═══ fin MN-GATE v1 ═══ */
-await mnGate();
 
-/* ═══ Accès direction — à garder identique aux règles Firebase et à conges.html ═══ */
-const ADMINS=[
-  'baptiste@matiere-noire.paris',
-  'felix@matiere-noire.paris',
-  'pierre@matiere-noire.paris',
-  'sam@matiere-noire.paris'
-];
-const estAdmin=u=>!!u&&u.emailVerified&&ADMINS.includes((u.email||'').toLowerCase());
+const mnUser=await mnGate();
+const ME=(mnUser.email||'').toLowerCase();
+const EDITEUR='baptiste@matiere-noire.paris';
+const EDIT=ME===EDITEUR;                       // seul Baptiste écrit (les règles l'imposent aussi)
+const DIRECTION=['baptiste@matiere-noire.paris','felix@matiere-noire.paris','pierre@matiere-noire.paris','sam@matiere-noire.paris'].includes(ME);
 
-function box(u,err){
-  const ok=estAdmin(u);
-  document.querySelector('#auth-box').innerHTML = u
-    ? `<div class="auth"><span class="who">${ok?'Connecté · '+esc(u.email):esc(u.email)+' — accès non autorisé'}</span>
-        <button class="btn" id="out">Se déconnecter</button></div>`
-    : `<div class="auth"><span class="who">Espace réservé à la direction — coûts, marges et administration.</span>
-        <button class="btn p" id="in">Se connecter avec Google</button>
-        ${err?`<p class="err">${esc(err)}</p>`:''}</div>`;
-  const i=document.querySelector('#in'), o=document.querySelector('#out');
-  if(i) i.onclick=async()=>{
-    try{const p=new GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});await signInWithPopup(auth,p);}
-    catch(e){box(null, location.protocol==='file:'
-      ? "Connexion impossible depuis un fichier local : ouvrez la page en ligne."
-      : "Connexion refusée. Utilisez votre compte @matiere-noire.paris.");}
-  };
-  if(o) o.onclick=()=>signOut(auth);
+/* ═══ textes de l'interface (lecture FR / EN ; l'édition est en français) ═══ */
+const T={
+ fr:{search:'Rechercher une fiche…',heroT:'Comment on fait, au studio',
+  heroP:'Les fiches pratiques de Matiere Noire : nos outils, nos démarches, notre matériel.',
+  parcours:'Parcours',categories:'Catégories',tout:'Toutes les fiches',recent:'Mises à jour récemment',
+  majLe:d=>'Mise à jour le '+d, fiches:n=>n+' fiche'+(n>1?'s':''),
+  vide:'Les premières fiches arrivent bientôt.',aucun:q=>'Aucune fiche ne correspond à « '+q+' ».',
+  resultats:n=>n+' résultat'+(n>1?'s':''),introuvable:'Cette fiche n’existe pas ou a été archivée.',retour:'Retour à l’accueil',
+  frSeul:'Cette fiche n’existe qu’en français.',enSeul:'',
+  copier:'Copier le lien',copie:'Lien copié',imprimer:'Imprimer ou PDF',signaler:'Signaler une erreur',
+  signalerT:'Une erreur, une étape qui manque, une question ? Baptiste recevra ton message.',
+  envoyer:'Envoyer',annuler:'Annuler',envoye:'Merci, ton message a été envoyé.',liees:'Fiches qui renvoient ici',
+  outils:'Outils concernés',etape:(i,n)=>'Étape '+i+' sur '+n,suivante:'Fiche suivante',precedente:'Précédente',
+  commencer:'Commencer',lu:'lue',fin:'Parcours terminé.',loc:'fr-FR'},
+ en:{search:'Search guides…',heroT:'How we do things at the studio',
+  heroP:'Matiere Noire’s how-to guides: our tools, our procedures, our equipment.',
+  parcours:'Paths',categories:'Categories',tout:'All guides',recent:'Recently updated',
+  majLe:d=>'Updated '+d, fiches:n=>n+' guide'+(n>1?'s':''),
+  vide:'The first guides are on their way.',aucun:q=>'No guide matches “'+q+'”.',
+  resultats:n=>n+' result'+(n>1?'s':''),introuvable:'This guide doesn’t exist or has been archived.',retour:'Back to home',
+  frSeul:'This guide is only available in French.',enSeul:'',
+  copier:'Copy link',copie:'Link copied',imprimer:'Print or PDF',signaler:'Report a mistake',
+  signalerT:'A mistake, a missing step, a question? Baptiste will get your message.',
+  envoyer:'Send',annuler:'Cancel',envoye:'Thanks, your message was sent.',liees:'Guides linking here',
+  outils:'Related tools',etape:(i,n)=>'Step '+i+' of '+n,suivante:'Next guide',precedente:'Previous',
+  commencer:'Start',lu:'read',fin:'Path completed.',loc:'en-GB'}
+};
+let L=localStorage.getItem('mn_wiki_lang')||((navigator.language||'').toLowerCase().startsWith('fr')?'fr':'en');
+const t=()=>T[L];
+
+/* outils de la plateforme, pour les liens « outils concernés » */
+const BASE='https://baptiste-mn.github.io';
+const OUTILS={
+  mn:['Portail','/mn/'], time:['Time tracking','/time-matiere-noire/'], conges:['Congés','/conges-matiere-noire/'],
+  planning:['Planning','/planning-matiere-noire/'], notes:['Notes','/notes-matiere-noire/'],
+  admin:['Administration','/admin-matiere-noire/'], dashboard:['Rentabilité','/dashboard-matiere-noire/'],
+  recap:['Récap projets','/project-recap/'], paie:['Bulletins de stage','/paie-matiere-noire/']
+};
+const RESERVES=['parcours','settings','sidebar','customize','upgrade','downloads','nouvelle'];
+
+/* ═══ état ═══ */
+let FICHES={}, PARC={}, RETOURS={}, IMG={}, charge=false;
+let vue={k:'home'};                // home | cat | fiche | parcours | search | edit | pedit | retours | relire | archives | historique
+let ctxParc=null;                  // parcours suivi quand on ouvre une fiche depuis un parcours
+let q='';
+
+/* ═══ utilitaires ═══ */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const today=()=>new Date().toISOString().slice(0,10);
+const fmtD=ms=>ms?new Date(ms).toLocaleDateString(t().loc,{day:'numeric',month:'long',year:'numeric'}):'';
+const fmtJ=iso=>iso?new Date(iso+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'}):'—';
+const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const tr=(o,lang=L)=>o?(o[lang]||o.fr||''):'';
+const enManque=f=>L==='en'&&!(f.contenu&&f.contenu.en&&f.contenu.en.trim());
+function slugify(s){
+  let x=norm(s).replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60)||'fiche';
+  if(RESERVES.some(r=>x===r||x.startsWith(r+'-'))||/^comment-/.test(x)) x='fiche-'+x;
+  return x;
 }
-onAuthStateChanged(auth,u=>{
-  const ok=estAdmin(u);
-  box(u);
-  // les outils de direction ne s'affichent que pour les comptes autorisés
-  document.querySelector('#sec-dir').style.display = ok||!u ? '' : '';
-  const mail=((u&&u.email)||'').toLowerCase();
-  document.querySelector('#dir').innerHTML = ok ? DIRECTION.filter(x=>!x.only||x.only.includes(mail)).map(x=>carte(x,false)).join('') : '';
-  document.querySelector('#ft').textContent = ok ? 'session ouverte' : 'accès direction verrouillé';
-});
-box(null);
+function addMonths(iso,n){const d=new Date(iso+'T12:00:00');d.setMonth(d.getMonth()+Number(n||6));return d.toISOString().slice(0,10);}
+function toast(m){const e=$('#toast');e.textContent=m;e.classList.add('on');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.remove('on'),2400);}
+const actives=()=>Object.values(FICHES).filter(f=>f&&!f.archive);
+const parSlug=s=>Object.values(FICHES).find(f=>f&&f.slug===s);
+const aRelire=()=>actives().filter(f=>f.relireLe&&f.relireLe<=today());
+const retoursOuverts=()=>Object.values(RETOURS).filter(r=>r&&r.statut!=='traite');
+const lus=()=>{try{return JSON.parse(localStorage.getItem('mn_wiki_lus')||'{}');}catch(_){return {};}};
+function marquerLu(id){try{const l=lus();l[id]=1;localStorage.setItem('mn_wiki_lus',JSON.stringify(l));}catch(_){}}
+
+/* ═══ rendu markdown ═══
+   [[slug]] ou [[slug|texte]] → lien vers une fiche ; ![légende](img:ID) → image stockée dans wikiImages */
+function md(src,lang=L){
+  let s=String(src||'');
+  s=s.replace(/\[\[([a-z0-9-]+)(?:\|([^\]]+))?\]\]/g,(m,sl,lab)=>{const f=parSlug(sl);return `[${(lab||(f?tr(f.titre,lang):sl)).replace(/[\[\]]/g,'')}](#${sl})`;});
+  s=s.replace(/\]\(img:([A-Za-z0-9_-]+)\)/g,'](#img-$1)');
+  let html;
+  if(window.marked&&window.DOMPurify){
+    html=DOMPurify.sanitize(marked.parse(s,{gfm:true,breaks:true}));
+  }else{                                          // repli si les librairies n'ont pas chargé
+    html=s.split(/\n{2,}/).map(p=>'<p>'+esc(p).replace(/\n/g,'<br>')+'</p>').join('');
+  }
+  return html;
+}
+async function hydrate(root){
+  root.querySelectorAll('a[href^="http"]').forEach(a=>{a.target='_blank';a.rel='noopener';});
+  const imgs=[...root.querySelectorAll('img[src^="#img-"]')];
+  await Promise.all(imgs.map(async im=>{
+    const id=im.getAttribute('src').slice(5);
+    if(!(id in IMG)){try{IMG[id]=((await get(ref(db,'wikiImages/'+id))).val()||{}).data||null;}catch(_){IMG[id]=null;}}
+    if(IMG[id]) im.src=IMG[id]; else {im.alt='(image introuvable)';im.removeAttribute('src');}
+  }));
+}
+
+/* ═══ données ═══ */
+onValue(ref(db,'wiki'),s=>{
+  const v=s.val()||{}; FICHES=v.fiches||{}; PARC=v.parcours||{}; charge=true;
+  if(!['edit','pedit','suivi','modele'].includes(vue.k)) route(); else renderAdm();
+},e=>{$('#main').innerHTML=`<div class="notice err">Impossible de charger le wiki : ${esc(e.message)}</div>`;});
+if(EDIT) onValue(ref(db,'wikiRetours'),s=>{RETOURS=s.val()||{};renderAdm();if(vue.k==='retours')render();},()=>{});
+
+/* ═══ navigation (hash = #slug d'une fiche, ou #parcours-<id>) ═══ */
+function route(){
+  const h=decodeURIComponent(location.hash.slice(1));
+  if(!h){ if(!['cat','search','retours','relire','archives','historique','checklists','suivi','modele'].includes(vue.k)) vue={k:'home'}; }
+  else if(h.startsWith('parcours-')) vue={k:'parcours',id:h.slice(9)};
+  else vue={k:'fiche',slug:h};
+  render();
+}
+window.addEventListener('hashchange',()=>{ if(vue.k==='edit'&&!confirm('Quitter l’éditeur ? Le brouillon reste enregistré sur cet ordinateur.')) return; route(); window.scrollTo(0,0); });
+function go(k,extra){vue={k,...extra}; if(location.hash) history.replaceState(null,'',location.pathname); render(); window.scrollTo(0,0);}
+
+/* ═══ rendu général ═══ */
+function render(){
+  document.documentElement.lang=L; document.title='Matiere Noire · Wiki';
+  if(['home','cat','search'].includes(vue.k)) ctxParc=null;
+  $('#q').placeholder=t().search;
+  document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===L));
+  renderAdm(); renderSide();
+  if(!charge){$('#main').innerHTML='<div class="empty">…</div>';return;}
+  ({home:vHome,cat:vCat,search:vSearch,fiche:vFiche,parcours:vParcours,edit:vEdit,pedit:vPEdit,
+    retours:vRetours,relire:vRelire,archives:vArchives,historique:vHistorique,
+    checklists:vChecklists,suivi:vSuivi,modele:vModele})[vue.k]();
+}
+function renderAdm(){
+  const a=$('#adm'); if(!DIRECTION){a.innerHTML='';return;}
+  const ck=`<button class="btn" data-a="ck">Checklists${suivisEnCours().length?`<span class="n" style="background:var(--ink)">${suivisEnCours().length}</span>`:''}</button>`;
+  if(!EDIT){a.innerHTML=ck;a.querySelector('[data-a=ck]').onclick=()=>go('checklists');return;}
+  const r=retoursOuverts().length, l=aRelire().length;
+  a.innerHTML=ck+`<button class="btn p" data-a="new">Nouvelle fiche</button>
+    <button class="btn" data-a="retours">Retours${r?`<span class="n">${r}</span>`:''}</button>
+    <button class="btn" data-a="relire">À relire${l?`<span class="n">${l}</span>`:''}</button>`;
+  a.querySelector('[data-a=new]').onclick=()=>go('edit',{id:null});
+  a.querySelector('[data-a=retours]').onclick=()=>go('retours');
+  a.querySelector('[data-a=relire]').onclick=()=>go('relire');
+  a.querySelector('[data-a=ck]').onclick=()=>go('checklists');
+}
+function categories(){
+  const c={}; actives().forEach(f=>{const k=f.categorie||'Autre';(c[k]=c[k]||[]).push(f);});
+  return Object.entries(c).sort((a,b)=>a[0].localeCompare(b[0],'fr'));
+}
+function renderSide(){
+  const ps=Object.entries(PARC).filter(([,p])=>p&&(p.fiches||[]).length).sort((a,b)=>(a[1].ordre||0)-(b[1].ordre||0));
+  const cats=categories();
+  $('#side').innerHTML=`
+    ${ps.length?`<div><h3>${esc(t().parcours)}</h3><ul>${ps.map(([id,p])=>`<li><a href="#parcours-${esc(id)}" class="${vue.k==='parcours'&&vue.id===id?'on':''}">${esc(tr(p.titre))}<span>${(p.fiches||[]).length}</span></a></li>`).join('')}</ul></div>`:''}
+    <div><h3>${esc(t().categories)}</h3><ul>
+      <li><a href="#" data-cat="" class="${vue.k==='home'?'on':''}">${esc(t().tout)}<span>${actives().length}</span></a></li>
+      ${cats.map(([c,l])=>`<li><a href="#" data-cat="${esc(c)}" class="${vue.k==='cat'&&vue.cat===c?'on':''}">${esc(c)}<span>${l.length}</span></a></li>`).join('')}
+    </ul></div>
+    ${EDIT?`<div><h3>Gestion</h3><ul>
+      <li><a href="#" data-g="pnew">Nouveau parcours</a></li>
+      <li><a href="#" data-g="archives">Archives<span>${Object.values(FICHES).filter(f=>f&&f.archive).length}</span></a></li></ul></div>`:''}`;
+  $('#side').querySelectorAll('[data-cat]').forEach(a=>a.onclick=e=>{e.preventDefault();q='';$('#q').value='';
+    a.dataset.cat?go('cat',{cat:a.dataset.cat}):go('home');});
+  const pn=$('#side [data-g=pnew]'); if(pn) pn.onclick=e=>{e.preventDefault();go('pedit',{id:null});};
+  const ar=$('#side [data-g=archives]'); if(ar) ar.onclick=e=>{e.preventDefault();go('archives');};
+}
+const item=f=>`<li><a href="#${esc(f.slug)}"><div class="it">${esc(tr(f.titre))}</div>
+  ${tr(f.resume)?`<div class="ir">${esc(tr(f.resume))}</div>`:''}
+  <div class="im">${esc(f.categorie||'Autre')} · ${esc(fmtD(f.majLe))}</div></a></li>`;
+
+/* ═══ vues lecture ═══ */
+function vHome(){
+  const ps=Object.entries(PARC).filter(([,p])=>p&&(p.fiches||[]).length).sort((a,b)=>(a[1].ordre||0)-(b[1].ordre||0));
+  const recents=actives().sort((a,b)=>(b.majLe||0)-(a.majLe||0)).slice(0,5);
+  $('#main').innerHTML=`<div class="hero"><h1>${esc(t().heroT)}</h1><p>${esc(t().heroP)}</p></div>
+    ${EDIT&&accueilManquant()?`<div class="notice">${accueilManquant()} fiche(s) d’accueil prête(s) à importer (accès, comptes, plateforme, poste, paie, freelances), avec 3 parcours. <button class="btn p" id="imp-acc">Importer les fiches d’accueil</button></div>`:''}
+    ${!actives().length?(EDIT?`<div class="empty">Aucune fiche pour l’instant. <button class="btn p" id="first">Créer la première fiche</button></div>`:`<div class="empty">${esc(t().vide)}</div>`):''}
+    ${ps.length?`<div class="sec"><h2>${esc(t().parcours)}</h2><div class="parc">${ps.map(([id,p])=>{
+      const l=lus(), n=(p.fiches||[]).length, faits=(p.fiches||[]).filter(x=>l[x]).length;
+      return `<a href="#parcours-${esc(id)}"><div class="it">${esc(tr(p.titre))}</div>
+        ${tr(p.description)?`<div class="ir">${esc(tr(p.description))}</div>`:''}
+        <div class="im">${esc(t().fiches(n))}${faits?` · ${faits}/${n} ${esc(t().lu)}${faits>1&&L==='fr'?'s':''}`:''}</div></a>`;}).join('')}</div></div>`:''}
+    ${recents.length>3?`<div class="sec"><h2>${esc(t().recent)}</h2><ul class="items">${recents.map(item).join('')}</ul></div>`:''}
+    ${categories().map(([c,l])=>`<div class="sec"><h2>${esc(c)}</h2><ul class="items">${l.sort((a,b)=>tr(a.titre).localeCompare(tr(b.titre),'fr')).map(item).join('')}</ul></div>`).join('')}`;
+  const f=$('#first'); if(f) f.onclick=()=>go('edit',{id:null});
+  const ia=$('#imp-acc'); if(ia) ia.onclick=importerAccueil;
+}
+function vCat(){
+  const l=actives().filter(f=>(f.categorie||'Autre')===vue.cat).sort((a,b)=>tr(a.titre).localeCompare(tr(b.titre),'fr'));
+  $('#main').innerHTML=`<div class="sec"><h2>${esc(vue.cat)}</h2>${l.length?`<ul class="items">${l.map(item).join('')}</ul>`:`<div class="empty">${esc(t().vide)}</div>`}</div>`;
+}
+function vSearch(){
+  const mots=norm(q).split(/\s+/).filter(Boolean);
+  const res=actives().map(f=>{
+    const ti=norm(tr(f.titre)+' '+tr(f.titre,'fr')), re=norm(tr(f.resume)), co=norm(tr(f.contenu)+' '+tr(f.contenu,'fr')), tg=norm((f.tags||[]).join(' ')+' '+(f.categorie||''));
+    if(!mots.every(m=>ti.includes(m)||re.includes(m)||co.includes(m)||tg.includes(m))) return null;
+    const sc=mots.reduce((s,m)=>s+(ti.includes(m)?10:0)+(tg.includes(m)?5:0)+(re.includes(m)?3:0)+(co.includes(m)?1:0),0);
+    return {f,sc};
+  }).filter(Boolean).sort((a,b)=>b.sc-a.sc);
+  const hl=s=>{let h=esc(s);mots.forEach(m=>{if(m.length<2)return;const re=new RegExp('('+m.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi');h=h.replace(re,'<mark>$1</mark>');});return h;};
+  $('#main').innerHTML=`<div class="sec"><h2>${esc(t().resultats(res.length))}</h2>
+    ${res.length?`<ul class="items">${res.map(({f})=>`<li><a href="#${esc(f.slug)}"><div class="it">${hl(tr(f.titre))}</div>
+      ${tr(f.resume)?`<div class="ir">${hl(tr(f.resume))}</div>`:''}<div class="im">${esc(f.categorie||'Autre')}</div></a></li>`).join('')}</ul>`
+      :`<div class="empty">${esc(t().aucun(q))}</div>`}</div>`;
+}
+function vFiche(){
+  const f=parSlug(vue.slug);
+  if(!f||(f.archive&&!EDIT)){$('#main').innerHTML=`<div class="empty">${esc(t().introuvable)} <a href="#">${esc(t().retour)}</a></div>`;return;}
+  document.title=tr(f.titre)+' · Wiki';
+  const langC=enManque(f)?'fr':L;
+  const liees=actives().filter(x=>x.id!==f.id&&/\[\[/.test((x.contenu&&(x.contenu.fr||''))+(x.contenu&&(x.contenu.en||'')))
+    &&new RegExp('\\[\\['+f.slug+'(\\||\\]\\])').test((x.contenu.fr||'')+(x.contenu.en||'')));
+  let pnav='';
+  if(ctxParc&&PARC[ctxParc]&&(PARC[ctxParc].fiches||[]).includes(f.id)){
+    const p=PARC[ctxParc], ids=p.fiches.filter(id=>FICHES[id]&&!FICHES[id].archive), i=ids.indexOf(f.id);
+    const prev=i>0?FICHES[ids[i-1]]:null, next=i<ids.length-1?FICHES[ids[i+1]]:null;
+    pnav=`<div class="pnav"><span><a href="#parcours-${esc(ctxParc)}">${esc(tr(p.titre))}</a> — ${esc(t().etape(i+1,ids.length))}</span>
+      <span>${prev?`<a href="#${esc(prev.slug)}">${esc(t().precedente)}</a> · `:''}${next?`<a href="#${esc(next.slug)}">${esc(t().suivante)} : ${esc(tr(next.titre))}</a>`:esc(t().fin)}</span></div>`;
+    marquerLu(f.id);
+  }
+  $('#main').innerHTML=`${pnav}<article>
+    <div class="crumb"><a href="#" id="crumb">${esc(f.categorie||'Autre')}</a></div>
+    ${f.archive?'<div class="notice err">Fiche archivée : invisible pour l’équipe.</div>':''}
+    ${EDIT&&f.relireLe&&f.relireLe<=today()?`<div class="notice">À relire depuis le ${esc(fmtJ(f.relireLe))}.</div>`:''}
+    <h1>${esc(tr(f.titre))}</h1>
+    ${tr(f.resume)?`<p class="lead">${esc(tr(f.resume))}</p>`:''}
+    <div class="meta"><span>${esc(t().majLe(fmtD(f.majLe)))}</span>
+      ${(f.outils||[]).filter(k=>OUTILS[k]).map(k=>`<a class="chip tool" href="${BASE+OUTILS[k][1]}" target="_blank" rel="noopener">${esc(OUTILS[k][0])}</a>`).join('')}
+      ${(f.tags||[]).map(g=>`<a class="chip" href="#" data-tag="${esc(g)}">${esc(g)}</a>`).join('')}</div>
+    ${langC!==L?`<div class="notice">${esc(t().frSeul)}</div>`:''}
+    <div class="md" id="md">${md(tr(f.contenu,langC),langC)}</div>
+    ${liees.length?`<div class="related"><h2>${esc(t().liees)}</h2><ul class="items">${liees.map(item).join('')}</ul></div>`:''}
+    <div class="actions">
+      <button class="btn" id="a-copy">${esc(t().copier)}</button>
+      <button class="btn" id="a-print">${esc(t().imprimer)}</button>
+      <button class="btn" id="a-sig">${esc(t().signaler)}</button>
+      ${EDIT?`<span class="spacer"></span><button class="btn p" id="a-edit">Modifier</button>
+        <button class="btn" id="a-hist">Historique</button>
+        <button class="btn${f.archive?'':' d'}" id="a-arch">${f.archive?'Désarchiver':'Archiver'}</button>`:''}
+    </div><div id="sigbox"></div></article>`;
+  hydrate($('#md'));
+  $('#crumb').onclick=e=>{e.preventDefault();go('cat',{cat:f.categorie||'Autre'});};
+  $('#main').querySelectorAll('[data-tag]').forEach(a=>a.onclick=e=>{e.preventDefault();q=a.dataset.tag;$('#q').value=q;go('search');});
+  $('#a-copy').onclick=async()=>{try{await navigator.clipboard.writeText(location.origin+location.pathname+'#'+f.slug);toast(t().copie);}catch(_){prompt('',location.origin+location.pathname+'#'+f.slug);}};
+  $('#a-print').onclick=()=>window.print();
+  $('#a-sig').onclick=()=>signaler(f);
+  if(EDIT){
+    $('#a-edit').onclick=()=>go('edit',{id:f.id});
+    $('#a-hist').onclick=()=>go('historique',{id:f.id});
+    $('#a-arch').onclick=async()=>{
+      if(!f.archive&&!confirm('Archiver « '+tr(f.titre,'fr')+' » ? Elle ne sera plus visible par l’équipe (rien n’est supprimé).'))return;
+      try{await update(ref(db,'wiki/fiches/'+f.id),{archive:!f.archive});toast(f.archive?'Fiche désarchivée':'Fiche archivée');}catch(e){alert('Échec : '+e.message);}
+    };
+  }
+}
+function signaler(f){
+  const b=$('#sigbox');
+  b.innerHTML=`<div class="box"><p style="margin:0 0 8px">${esc(t().signalerT)}</p><textarea id="sig-t" maxlength="2000"></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px"><button class="btn p" id="sig-ok">${esc(t().envoyer)}</button><button class="btn" id="sig-no">${esc(t().annuler)}</button></div></div>`;
+  $('#sig-t').focus();
+  $('#sig-no').onclick=()=>b.innerHTML='';
+  $('#sig-ok').onclick=async()=>{
+    const m=$('#sig-t').value.trim(); if(!m) return;
+    try{await set(push(ref(db,'wikiRetours')),{ficheId:f.id,ficheTitre:tr(f.titre,'fr'),message:m,email:ME,creeLe:Date.now(),statut:'ouvert'});
+      b.innerHTML=`<div class="notice">${esc(t().envoye)}</div>`;}
+    catch(e){alert('Échec : '+e.message);}
+  };
+}
+function vParcours(){
+  const p=PARC[vue.id];
+  if(!p){$('#main').innerHTML=`<div class="empty">${esc(t().introuvable)} <a href="#">${esc(t().retour)}</a></div>`;return;}
+  ctxParc=vue.id;
+  const ids=(p.fiches||[]).filter(id=>FICHES[id]&&(!FICHES[id].archive)), l=lus();
+  $('#main').innerHTML=`<article><h1>${esc(tr(p.titre))}</h1>${tr(p.description)?`<p class="lead">${esc(tr(p.description))}</p>`:''}
+    <div class="md"><ol>${ids.map(id=>{const f=FICHES[id];return `<li><a href="#${esc(f.slug)}"><strong>${esc(tr(f.titre))}</strong></a>${l[id]?` <span class="chip">${esc(t().lu)}</span>`:''}
+      ${tr(f.resume)?`<br><span style="color:var(--ink2)">${esc(tr(f.resume))}</span>`:''}</li>`;}).join('')}</ol></div>
+    <div class="actions">${ids.length?`<a class="btn p" href="#${esc(FICHES[ids[0]].slug)}">${esc(t().commencer)}</a>`:''}
+      ${EDIT?`<span class="spacer"></span><button class="btn" id="p-edit">Modifier le parcours</button>`:''}</div></article>`;
+  const e=$('#p-edit'); if(e) e.onclick=()=>go('pedit',{id:vue.id});
+}
+
+/* ═══ éditeur de fiche (Baptiste) ═══ */
+let E=null, eLang='fr', eTimer=null;
+const draftKey=id=>'mn_wiki_draft_'+(id||'nouvelle');
+function vEdit(){
+  if(!EDIT){go('home');return;}
+  const src=vue.id?FICHES[vue.id]:null;
+  if(!E||E._for!==(vue.id||'new')){
+    E=src?JSON.parse(JSON.stringify(src)):{id:null,slug:'',titre:{fr:'',en:''},resume:{fr:'',en:''},contenu:{fr:'',en:''},
+      categorie:'',tags:[],outils:[],relireMois:6,archive:false};
+    E.titre=E.titre||{fr:'',en:''};E.resume=E.resume||{fr:'',en:''};E.contenu=E.contenu||{fr:'',en:''};
+    E._for=vue.id||'new'; eLang='fr';
+    let d=null; try{d=JSON.parse(localStorage.getItem(draftKey(vue.id))||'null');}catch(_){}
+    E._draft=d&&(!src||d._savedAt>(src.majLe||0))?d:null;
+  }
+  const cats=[...new Set(Object.values(FICHES).map(f=>f&&f.categorie).filter(Boolean))].sort();
+  $('#main').innerHTML=`
+    <div class="edbar"><strong>${src?'Modifier la fiche':'Nouvelle fiche'}</strong><span class="spacer"></span>
+      <button class="btn" id="e-cancel">Annuler</button><button class="btn p" id="e-save">Enregistrer</button></div>
+    ${E._draft?`<div class="notice">Un brouillon non enregistré du ${esc(new Date(E._draft._savedAt).toLocaleString('fr-FR'))} existe.
+      <button class="btn" id="d-yes">Reprendre le brouillon</button> <button class="btn" id="d-no">L’ignorer</button></div>`:''}
+    <div class="ed"><div>
+      <div class="two"><div><label>Titre (FR)</label><input id="e-tfr" value="${esc(E.titre.fr)}"></div>
+        <div><label>Titre (EN)</label><input id="e-ten" value="${esc(E.titre.en)}"></div></div>
+      <div class="two"><div><label>Résumé en une phrase (FR)</label><input id="e-rfr" value="${esc(E.resume.fr)}"></div>
+        <div><label>Résumé (EN)</label><input id="e-ren" value="${esc(E.resume.en)}"></div></div>
+      <div class="two"><div><label>Catégorie</label><input id="e-cat" list="cats" value="${esc(E.categorie)}" placeholder="ex. Outils internes">
+          <datalist id="cats">${['Outils internes','Admin & RH','Studio & matériel','Logiciels & rendu','Voyages & déplacements','Compta & achats',...cats].filter((v,i,a)=>a.indexOf(v)===i).map(c=>`<option value="${esc(c)}">`).join('')}</datalist></div>
+        <div><label>Mots-clés (séparés par des virgules)</label><input id="e-tags" value="${esc((E.tags||[]).join(', '))}"></div></div>
+      <div class="two"><div><label>Adresse de la fiche</label><input id="e-slug" value="${esc(E.slug)}" placeholder="générée depuis le titre"></div>
+        <div><label>À relire tous les</label><select id="e-rel">${[3,6,12].map(m=>`<option value="${m}"${Number(E.relireMois||6)===m?' selected':''}>${m} mois</option>`).join('')}</select></div></div>
+      <label>Outils concernés</label>
+      <div class="tools">${Object.entries(OUTILS).map(([k,[n]])=>`<label><input type="checkbox" value="${k}"${(E.outils||[]).includes(k)?' checked':''}>${esc(n)}</label>`).join('')}</div>
+      <div class="tabs"><button data-el="fr" aria-selected="${eLang==='fr'}">Contenu FR</button><button data-el="en" aria-selected="${eLang==='en'}">Contenu EN${E.contenu.en&&E.contenu.en.trim()?'':' (vide)'}</button></div>
+      <div class="tb">
+        <button data-md="h2" title="Intertitre">Titre</button><button data-md="b"><b>Gras</b></button><button data-md="i"><i>Italique</i></button>
+        <button data-md="ol">Étapes 1. 2. 3.</button><button data-md="ul">Liste</button><button data-md="q">Encadré</button>
+        <button data-md="link">Lien</button><button data-md="fiche">Lien vers une fiche</button><button data-md="img">Image</button>
+      </div>
+      <textarea class="body" id="e-body" spellcheck="true">${esc(E.contenu[eLang]||'')}</textarea>
+      <p class="hint">Markdown. Les étapes numérotées (1. 2. 3.) s’affichent comme un pas à pas. Colle une capture d’écran directement dans le texte pour l’ajouter.</p>
+      <input type="file" id="e-file" accept="image/*" hidden>
+    </div>
+    <div class="prev"><article><h1 style="font-size:28px" id="p-t"></h1><p class="lead" id="p-r"></p><div class="md" id="p-md"></div></article></div></div>`;
+  const pv=()=>{
+    $('#p-t').textContent=E.titre[eLang]||E.titre.fr||'Sans titre';
+    $('#p-r').textContent=E.resume[eLang]||E.resume.fr||'';
+    $('#p-md').innerHTML=md(E.contenu[eLang]||'',eLang); hydrate($('#p-md'));
+  };
+  const sauverBrouillon=()=>{clearTimeout(eTimer);eTimer=setTimeout(()=>{try{localStorage.setItem(draftKey(vue.id),JSON.stringify({...E,_draft:null,_savedAt:Date.now()}));}catch(_){}},600);};
+  const bind=(sel,fn)=>{$(sel).oninput=e=>{fn(e.target.value);sauverBrouillon();pv();};};
+  bind('#e-tfr',v=>E.titre.fr=v); bind('#e-ten',v=>E.titre.en=v);
+  bind('#e-rfr',v=>E.resume.fr=v); bind('#e-ren',v=>E.resume.en=v);
+  bind('#e-cat',v=>E.categorie=v); bind('#e-tags',v=>E.tags=v.split(',').map(x=>x.trim()).filter(Boolean));
+  bind('#e-slug',v=>E.slug=v); bind('#e-body',v=>E.contenu[eLang]=v);
+  $('#e-rel').onchange=e=>{E.relireMois=Number(e.target.value);sauverBrouillon();};
+  $('#main').querySelectorAll('.tools input').forEach(c=>c.onchange=()=>{E.outils=[...$('#main').querySelectorAll('.tools input:checked')].map(x=>x.value);sauverBrouillon();});
+  $('#main').querySelectorAll('[data-el]').forEach(b=>b.onclick=()=>{eLang=b.dataset.el;vEdit();});
+  const ta=$('#e-body');
+  const wrap=(a,b,ph)=>{const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.slice(s,e)||ph;
+    ta.setRangeText(a+sel+b,s,e,'end');ta.focus();E.contenu[eLang]=ta.value;sauverBrouillon();pv();};
+  const lignes=pre=>{const s=ta.selectionStart,e=ta.selectionEnd,sel=ta.value.slice(s,e)||'';
+    const out=(sel||'').split('\n').map((l,i)=>(typeof pre==='function'?pre(i):pre)+l).join('\n');
+    ta.setRangeText((s&&ta.value[s-1]!=='\n'?'\n':'')+out,s,e,'end');ta.focus();E.contenu[eLang]=ta.value;sauverBrouillon();pv();};
+  $('#main').querySelectorAll('[data-md]').forEach(b=>b.onclick=()=>{
+    const k=b.dataset.md;
+    if(k==='h2') lignes('## ');
+    else if(k==='b') wrap('**','**','texte');
+    else if(k==='i') wrap('*','*','texte');
+    else if(k==='ol') lignes(i=>(i+1)+'. ');
+    else if(k==='ul') lignes('- ');
+    else if(k==='q') lignes('> ');
+    else if(k==='link'){const u=prompt('Adresse du lien (https://…)');if(u)wrap('[',']('+u+')','texte du lien');}
+    else if(k==='fiche'){
+      const l=actives().filter(f=>f.id!==E.id).sort((a,b)=>tr(a.titre,'fr').localeCompare(tr(b.titre,'fr'),'fr'));
+      if(!l.length){alert('Aucune autre fiche pour l’instant.');return;}
+      const choix=prompt('Numéro de la fiche à lier :\n\n'+l.map((f,i)=>(i+1)+'. '+tr(f.titre,'fr')).join('\n'));
+      const f=l[Number(choix)-1]; if(f) wrap('[['+f.slug,']]','');
+    }
+    else if(k==='img') $('#e-file').click();
+  });
+  $('#e-file').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)ajouterImage(f,ta);};
+  ta.onpaste=e=>{const it=[...(e.clipboardData||{}).items||[]].find(x=>x.type&&x.type.startsWith('image/'));
+    if(it){e.preventDefault();ajouterImage(it.getAsFile(),ta);}};
+  if(E._draft){
+    $('#d-yes').onclick=()=>{const d=E._draft;Object.assign(E,d);E._draft=null;E._for=vue.id||'new';vEdit();};
+    $('#d-no').onclick=()=>{E._draft=null;try{localStorage.removeItem(draftKey(vue.id));}catch(_){}vEdit();};
+  }
+  $('#e-cancel').onclick=()=>{
+    if(!confirm('Abandonner les modifications ? Le brouillon local sera supprimé.'))return;
+    try{localStorage.removeItem(draftKey(vue.id));}catch(_){}
+    const s=src&&src.slug; E=null; s?(location.hash=s,route()):go('home');
+  };
+  $('#e-save').onclick=()=>enregistrer(src);
+  pv();
+}
+async function ajouterImage(file,ta){
+  try{
+    toast('Image en cours d’ajout…');
+    const data=await compresser(file);
+    const id=uid('i');
+    await set(ref(db,'wikiImages/'+id),{data,octets:Math.round(data.length*0.75),ficheId:E.id||null,creeLe:Date.now()});
+    IMG[id]=data;
+    const s=ta.selectionStart; ta.setRangeText(`\n![](img:${id})\n`,s,ta.selectionEnd,'end');
+    E.contenu[eLang]=ta.value; localStorage.setItem(draftKey(vue.id),JSON.stringify({...E,_draft:null,_savedAt:Date.now()}));
+    $('#p-md').innerHTML=md(E.contenu[eLang]); hydrate($('#p-md')); toast('Image ajoutée');
+  }catch(e){alert('Image non ajoutée : '+e.message);}
+}
+/* redimensionne (1600 px max) et compresse jusqu'à ~350 Ko, pour ne pas alourdir la base */
+async function compresser(file){
+  const url=URL.createObjectURL(file);
+  const img=await new Promise((ok,ko)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>ko(new Error('fichier illisible'));i.src=url;});
+  let w=img.naturalWidth,h=img.naturalHeight,max=1600,q=.82,out='';
+  for(let n=0;n<6;n++){
+    const r=Math.min(1,max/Math.max(w,h)), c=document.createElement('canvas');
+    c.width=Math.round(w*r);c.height=Math.round(h*r);
+    const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);
+    out=c.toDataURL('image/webp',q); if(!out.startsWith('data:image/webp')) out=c.toDataURL('image/jpeg',q);
+    if(out.length*0.75<=350000) break;
+    q-=.12; max=Math.round(max*.85);
+  }
+  URL.revokeObjectURL(url);
+  if(out.length*0.75>600000) throw new Error('image trop lourde même après compression');
+  return out;
+}
+async function enregistrer(src){
+  if(!E.titre.fr.trim()){alert('Le titre en français est obligatoire.');return;}
+  if(!E.contenu.fr.trim()){alert('Le contenu en français est obligatoire.');return;}
+  let slug=slugify(E.slug||E.titre.fr);
+  const pris=Object.values(FICHES).find(f=>f&&f.slug===slug&&f.id!==E.id);
+  if(pris){alert('L’adresse « '+slug+' » est déjà utilisée par « '+tr(pris.titre,'fr')+' ». Choisis-en une autre.');return;}
+  const now=Date.now(), id=E.id||uid('f');
+  const f={id,slug,titre:E.titre,resume:E.resume,contenu:E.contenu,categorie:(E.categorie||'').trim()||'Autre',
+    tags:E.tags||[],outils:E.outils||[],relireMois:Number(E.relireMois||6),relireLe:addMonths(today(),E.relireMois||6),
+    archive:!!(src&&src.archive),creeLe:(src&&src.creeLe)||now,majLe:now,majPar:ME};
+  try{
+    if(src) await set(ref(db,`wikiHistorique/${id}/${src.majLe||now-1}`),src);   // version précédente conservée
+    await set(ref(db,'wiki/fiches/'+id),f);
+    try{localStorage.removeItem(draftKey(src?src.id:null));}catch(_){}
+    E=null; toast('Fiche enregistrée'); location.hash=slug; route();
+  }catch(e){alert('Non enregistré : '+e.message+'\nLe brouillon reste sur cet ordinateur.');}
+}
+
+/* ═══ historique ═══ */
+async function vHistorique(){
+  const f=FICHES[vue.id]; if(!f){go('home');return;}
+  $('#main').innerHTML='<div class="empty">Chargement de l’historique…</div>';
+  let h={}; try{h=(await get(ref(db,'wikiHistorique/'+f.id))).val()||{};}catch(e){$('#main').innerHTML=`<div class="notice err">${esc(e.message)}</div>`;return;}
+  const vs=Object.entries(h).sort((a,b)=>b[0]-a[0]);
+  $('#main').innerHTML=`<div class="edbar"><strong>Historique · ${esc(tr(f.titre,'fr'))}</strong><span class="spacer"></span><a class="btn" href="#${esc(f.slug)}">Retour à la fiche</a></div>
+    ${vs.length?`<table class="list"><thead><tr><th>Version du</th><th>Par</th><th>Titre</th><th></th></tr></thead><tbody>
+    ${vs.map(([k,v])=>`<tr><td>${esc(new Date(Number(k)).toLocaleString('fr-FR'))}</td><td>${esc(v.majPar||'—')}</td><td>${esc(tr(v.titre,'fr'))}</td>
+      <td style="text-align:right;white-space:nowrap"><button class="btn" data-v="${k}">Voir</button> <button class="btn" data-r="${k}">Restaurer</button></td></tr>`).join('')}
+    </tbody></table>`:'<div class="empty">Aucune version antérieure : la fiche n’a pas encore été modifiée.</div>'}`;
+  $('#main').querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{
+    const v=h[b.dataset.v], m=document.createElement('div'); m.className='modal';
+    m.innerHTML=`<div><div class="edbar"><strong>Version du ${esc(new Date(Number(b.dataset.v)).toLocaleString('fr-FR'))}</strong><span class="spacer"></span><button class="btn" id="m-x">Fermer</button></div>
+      <article><h1 style="font-size:28px">${esc(tr(v.titre,'fr'))}</h1><div class="md" id="m-md">${md(tr(v.contenu,'fr'))}</div></article></div>`;
+    document.body.appendChild(m); hydrate(m.querySelector('#m-md'));
+    m.onclick=e=>{if(e.target===m||e.target.id==='m-x')m.remove();};
+  });
+  $('#main').querySelectorAll('[data-r]').forEach(b=>b.onclick=async()=>{
+    if(!confirm('Restaurer cette version ? La version actuelle sera elle-même conservée dans l’historique.'))return;
+    const v=h[b.dataset.r], now=Date.now();
+    try{
+      await set(ref(db,`wikiHistorique/${f.id}/${f.majLe||now-1}`),f);
+      await set(ref(db,'wiki/fiches/'+f.id),{...v,id:f.id,slug:f.slug,archive:!!f.archive,majLe:now,majPar:ME,relireLe:addMonths(today(),v.relireMois||6)});
+      toast('Version restaurée'); location.hash=f.slug; route();
+    }catch(e){alert('Échec : '+e.message);}
+  });
+}
+
+/* ═══ retours de l'équipe ═══ */
+function vRetours(){
+  if(!EDIT){go('home');return;}
+  const l=Object.entries(RETOURS).filter(([,r])=>r).sort((a,b)=>(a[1].statut==='traite')-(b[1].statut==='traite')||b[1].creeLe-a[1].creeLe);
+  $('#main').innerHTML=`<div class="edbar"><strong>Retours de l’équipe</strong></div>
+    ${l.length?`<table class="list"><thead><tr><th>Fiche</th><th>Message</th><th>De</th><th>Le</th><th></th></tr></thead><tbody>
+    ${l.map(([id,r])=>{const f=FICHES[r.ficheId];return `<tr style="${r.statut==='traite'?'color:var(--ink3)':''}">
+      <td>${f?`<a href="#${esc(f.slug)}">${esc(tr(f.titre,'fr'))}</a>`:esc(r.ficheTitre||'—')}</td>
+      <td style="white-space:pre-wrap;max-width:46ch">${esc(r.message)}</td><td>${esc(r.email)}</td>
+      <td>${esc(new Date(r.creeLe).toLocaleDateString('fr-FR'))}</td>
+      <td style="text-align:right;white-space:nowrap">${r.statut==='traite'?'Traité':`<button class="btn" data-ok="${esc(id)}">Marquer traité</button>`}
+        <button class="btn d" data-del="${esc(id)}">Supprimer</button></td></tr>`;}).join('')}
+    </tbody></table>`:'<div class="empty">Aucun retour pour l’instant.</div>'}`;
+  $('#main').querySelectorAll('[data-ok]').forEach(b=>b.onclick=()=>update(ref(db,'wikiRetours/'+b.dataset.ok),{statut:'traite',traiteLe:Date.now()}).catch(e=>alert(e.message)));
+  $('#main').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{if(confirm('Supprimer ce retour ?'))remove(ref(db,'wikiRetours/'+b.dataset.del)).catch(e=>alert(e.message));});
+}
+
+/* ═══ fiches à relire ═══ */
+function vRelire(){
+  if(!EDIT){go('home');return;}
+  const l=aRelire().sort((a,b)=>a.relireLe.localeCompare(b.relireLe));
+  $('#main').innerHTML=`<div class="edbar"><strong>Fiches à relire</strong></div>
+    <p class="hint" style="margin:-8px 0 16px">Une fiche passe ici quand sa date de relecture est atteinte. Si elle est toujours juste, marque-la comme relue ; sinon, modifie-la.</p>
+    ${l.length?`<table class="list"><thead><tr><th>Fiche</th><th>À relire depuis</th><th>Dernière mise à jour</th><th></th></tr></thead><tbody>
+    ${l.map(f=>`<tr><td><a href="#${esc(f.slug)}">${esc(tr(f.titre,'fr'))}</a></td><td>${esc(fmtJ(f.relireLe))}</td>
+      <td>${esc(new Date(f.majLe).toLocaleDateString('fr-FR'))}</td>
+      <td style="text-align:right;white-space:nowrap"><button class="btn" data-ok="${esc(f.id)}">Marquer comme relue</button> <button class="btn" data-ed="${esc(f.id)}">Modifier</button></td></tr>`).join('')}
+    </tbody></table>`:'<div class="empty">Toutes les fiches sont à jour.</div>'}`;
+  $('#main').querySelectorAll('[data-ok]').forEach(b=>b.onclick=()=>{const f=FICHES[b.dataset.ok];
+    update(ref(db,'wiki/fiches/'+f.id),{relireLe:addMonths(today(),f.relireMois||6),relueLe:today()}).then(()=>toast('Fiche marquée comme relue')).catch(e=>alert(e.message));});
+  $('#main').querySelectorAll('[data-ed]').forEach(b=>b.onclick=()=>go('edit',{id:b.dataset.ed}));
+}
+function vArchives(){
+  if(!EDIT){go('home');return;}
+  const l=Object.values(FICHES).filter(f=>f&&f.archive).sort((a,b)=>tr(a.titre,'fr').localeCompare(tr(b.titre,'fr'),'fr'));
+  $('#main').innerHTML=`<div class="sec"><h2>Archives</h2><p class="hint" style="margin:0 0 10px">Invisibles pour l’équipe. Ouvre une fiche pour la désarchiver.</p>
+    ${l.length?`<ul class="items">${l.map(item).join('')}</ul>`:'<div class="empty">Aucune fiche archivée.</div>'}</div>`;
+}
+
+/* ═══ éditeur de parcours (Baptiste) ═══ */
+let P=null;
+function vPEdit(){
+  if(!EDIT){go('home');return;}
+  const src=vue.id?PARC[vue.id]:null;
+  if(!P||P._for!==(vue.id||'new')){
+    P=src?JSON.parse(JSON.stringify(src)):{titre:{fr:'',en:''},description:{fr:'',en:''},fiches:[],ordre:Object.keys(PARC).length};
+    P.titre=P.titre||{fr:'',en:''};P.description=P.description||{fr:'',en:''};P.fiches=P.fiches||[];P._for=vue.id||'new';
+  }
+  const dispo=actives().filter(f=>!P.fiches.includes(f.id)).sort((a,b)=>tr(a.titre,'fr').localeCompare(tr(b.titre,'fr'),'fr'));
+  $('#main').innerHTML=`<div class="edbar"><strong>${src?'Modifier le parcours':'Nouveau parcours'}</strong><span class="spacer"></span>
+      ${src?'<button class="btn d" id="pe-del">Supprimer</button>':''}<button class="btn" id="pe-x">Annuler</button><button class="btn p" id="pe-ok">Enregistrer</button></div>
+    <p class="hint" style="margin:-8px 0 12px">Une suite de fiches à lire dans l’ordre, par exemple pour l’arrivée d’un stagiaire. Chacun voit sa progression sur son ordinateur.</p>
+    <div class="ed" style="grid-template-columns:1fr"><div>
+      <div class="two"><div><label>Titre (FR)</label><input id="pe-tfr" value="${esc(P.titre.fr)}" placeholder="ex. Arrivée au studio"></div>
+        <div><label>Titre (EN)</label><input id="pe-ten" value="${esc(P.titre.en)}" placeholder="ex. Joining the studio"></div></div>
+      <div class="two"><div><label>Description (FR)</label><input id="pe-dfr" value="${esc(P.description.fr)}"></div>
+        <div><label>Description (EN)</label><input id="pe-den" value="${esc(P.description.en)}"></div></div>
+      <label>Fiches, dans l’ordre</label>
+      <ol class="porder" style="list-style:decimal;padding-left:22px">${P.fiches.map((id,i)=>`<li><span>${esc(FICHES[id]?tr(FICHES[id].titre,'fr'):'(fiche supprimée)')}</span>
+        <button class="btn" data-up="${i}"${i?'':' disabled'}>Monter</button><button class="btn" data-dn="${i}"${i<P.fiches.length-1?'':' disabled'}>Descendre</button>
+        <button class="btn d" data-rm="${i}">Retirer</button></li>`).join('')||'<li style="list-style:none;color:var(--ink3)">Aucune fiche.</li>'}</ol>
+      <div class="two" style="margin-top:10px"><select id="pe-add"><option value="">Ajouter une fiche…</option>${dispo.map(f=>`<option value="${esc(f.id)}">${esc(tr(f.titre,'fr'))}</option>`).join('')}</select></div>
+    </div></div>`;
+  const b=(s,fn)=>{$(s).oninput=e=>fn(e.target.value);};
+  b('#pe-tfr',v=>P.titre.fr=v);b('#pe-ten',v=>P.titre.en=v);b('#pe-dfr',v=>P.description.fr=v);b('#pe-den',v=>P.description.en=v);
+  $('#pe-add').onchange=e=>{if(e.target.value){P.fiches.push(e.target.value);vPEdit();}};
+  $('#main').querySelectorAll('[data-up]').forEach(x=>x.onclick=()=>{const i=+x.dataset.up;[P.fiches[i-1],P.fiches[i]]=[P.fiches[i],P.fiches[i-1]];vPEdit();});
+  $('#main').querySelectorAll('[data-dn]').forEach(x=>x.onclick=()=>{const i=+x.dataset.dn;[P.fiches[i+1],P.fiches[i]]=[P.fiches[i],P.fiches[i+1]];vPEdit();});
+  $('#main').querySelectorAll('[data-rm]').forEach(x=>x.onclick=()=>{P.fiches.splice(+x.dataset.rm,1);vPEdit();});
+  $('#pe-x').onclick=()=>{P=null;src?(location.hash='parcours-'+vue.id,route()):go('home');};
+  $('#pe-ok').onclick=async()=>{
+    if(!P.titre.fr.trim()){alert('Le titre en français est obligatoire.');return;}
+    const id=vue.id||uid('p'); const {_for,...data}=P;
+    try{await set(ref(db,'wiki/parcours/'+id),{...data,majLe:Date.now()});P=null;toast('Parcours enregistré');location.hash='parcours-'+id;route();}
+    catch(e){alert('Non enregistré : '+e.message);}
+  };
+  const d=$('#pe-del'); if(d) d.onclick=async()=>{
+    if(!confirm('Supprimer ce parcours ? Les fiches ne sont pas touchées.'))return;
+    try{await remove(ref(db,'wiki/parcours/'+vue.id));P=null;history.replaceState(null,'',location.pathname);go('home');}catch(e){alert(e.message);}
+  };
+}
+
+
+/* ═══ IMPORT DES FICHES D'ACCUEIL (Baptiste) ═══
+   Tiré des fiches d'information stagiaires / freelances et du protocole d'accueil (oct. 2026), corrections validées.
+   Import non destructif : une fiche dont l'adresse existe déjà n'est jamais écrasée. */
+const P_URL='https://baptiste-mn.github.io';
+const ACCUEIL={fiches:[
+ {slug:'acces-et-horaires',outils:[],tags:['accueil','codes','adresse'],
+  titre:{fr:'Accès au studio et horaires',en:'Studio access and hours'},
+  resume:{fr:'Adresse, codes d’entrée, horaires et vie quotidienne au studio.',en:'Address, door codes, hours and day-to-day life at the studio.'},
+  contenu:{fr:`## Adresse
+20 rue Saint-Sauveur, 75002 Paris. Le studio se trouve dans la **véranda blanche, au fond de la cour**.
+
+## Codes d’entrée
+- Code 1 : **B1453**
+- Code 2 : **1848**
+
+> Les codes peuvent changer : en cas de doute, demande à Baptiste.
+
+## Horaires
+Le studio est ouvert de **10 h à 18 h**. Stagiaires : merci d’arriver quelques minutes avant 10 h pour être prêt·e à démarrer à l’heure.
+
+## Déjeuner
+Pause d’environ une heure ; on mange généralement ensemble dans la salle de réunion.
+
+Les déchets alimentaires et emballages vont dans les **poubelles de la cour**, pas celles du studio, pour qu’elles ne se remplissent pas trop vite.`,
+   en:`## Address
+20 rue Saint-Sauveur, 75002 Paris. The studio is in the **white veranda at the back of the courtyard**.
+
+## Door codes
+- Code 1: **B1453**
+- Code 2: **1848**
+
+> Codes may change: if in doubt, ask Baptiste.
+
+## Hours
+The studio is open from **10am to 6pm**. Interns: please arrive a few minutes before 10am so you are ready to start on time.
+
+## Lunch
+Break of about one hour; we usually eat together in the meeting room.
+
+Food waste and packaging go in the **courtyard bins**, not the studio ones, so they don’t fill up too quickly.`}},
+ {slug:'comptes-et-documents',outils:[],tags:['accueil','mail','dropbox','documents'],
+  titre:{fr:'Avant ton arrivée : comptes et documents',en:'Before you arrive: accounts and documents'},
+  resume:{fr:'Activer ton adresse Matiere Noire, ta Dropbox, et les documents à nous envoyer.',en:'Activating your Matiere Noire address and Dropbox, and the documents to send us.'},
+  contenu:{fr:`## Ton adresse Matiere Noire
+1. Tu reçois un mail sur ton **adresse perso** pour activer ton adresse \`prénom@matiere-noire.paris\`.
+2. Suis les instructions, puis ajoute le compte à Gmail (web : « Ajouter un compte » ; mobile : « Gérer les comptes » › « Ajouter »).
+3. Vérifie que tu peux envoyer et recevoir des mails.
+
+Cette adresse devient ton canal de travail : les échanges projet ne restent pas sur ton mail perso. Elle sert aussi à te connecter à la plateforme, voir [[se-connecter-a-la-plateforme]].
+
+## Dropbox
+1. Ouvre l’invitation Dropbox reçue sur ton **adresse pro**.
+2. Accepte-la, installe l’appli si besoin et connecte-toi.
+3. Vérifie que tu es connecté·e avec ton **compte studio**, pas un compte perso, et que tu vois les dossiers de l’équipe.
+
+Les fichiers projet vivent dans Dropbox : pas sur ton bureau, pas en pièces jointes.
+
+## Clavier
+Dis-nous si tu travailles sur un clavier **AZERTY ou QWERTY**.
+
+## Documents à fournir (si pas encore fait)
+- Copie de ta pièce d’identité (passeport ou carte d’identité)
+- Numéro de sécurité sociale, et copie de ta carte Vitale si tu en as une
+- RIB
+- Adresse postale, et ton **adresse en France** si tu y résides
+- Numéro de téléphone
+
+**Freelances**, en plus :
+- SIRET (avis INSEE ou extrait Kbis) et adresse de facturation
+- Attestation de vigilance URSSAF de moins de 6 mois (obligatoire dès 5 000 € HT de mission)
+- NDA signé`,
+   en:`## Your Matiere Noire address
+1. You receive an email on your **personal address** to activate your \`firstname@matiere-noire.paris\` address.
+2. Follow the instructions, then add the account to Gmail (web: “Add account”; mobile: “Manage accounts” › “Add”).
+3. Check that you can send and receive emails.
+
+This address becomes your work channel: project conversations don’t stay on your personal email. It is also how you sign in to the platform, see [[se-connecter-a-la-plateforme]].
+
+## Dropbox
+1. Open the Dropbox invitation sent to your **work address**.
+2. Accept it, install the app if needed and sign in.
+3. Make sure you are signed in with your **studio account**, not a personal one, and that you can see the team folders.
+
+Project files live in Dropbox: not on your desktop, not as email attachments.
+
+## Keyboard
+Let us know whether you work on an **AZERTY or QWERTY** keyboard.
+
+## Documents to provide (if not already done)
+- Copy of your ID (passport or national ID card)
+- Social security number, and a copy of your Carte Vitale if you have one
+- Bank details (RIB)
+- Postal address, and your **address in France** if you live there
+- Phone number
+
+**Freelancers**, in addition:
+- SIRET number (INSEE notice or Kbis extract) and billing address
+- URSSAF certificate of compliance (attestation de vigilance) less than 6 months old (required from €5,000 excl. VAT per assignment)
+- Signed NDA`}},
+ {slug:'se-connecter-a-la-plateforme',outils:['mn','time','conges','notes'],tags:['accueil','connexion','time tracking','congés'],
+  titre:{fr:'Se connecter à la plateforme',en:'Signing in to the platform'},
+  resume:{fr:'Time tracking, congés, notes et wiki : une seule connexion avec ton adresse Matiere Noire.',en:'Time tracking, leave, notes and wiki: a single sign-in with your Matiere Noire address.'},
+  contenu:{fr:`Tous les outils du studio sont réunis sur le portail : ${P_URL}/mn/
+
+## Première connexion
+1. Ouvre le portail ou n’importe quel outil.
+2. Clique sur « Se connecter avec Google ».
+3. Choisis ton adresse **@matiere-noire.paris** (pas ton adresse perso).
+
+Tu restes connecté·e ensuite : une connexion vaut pour tous les outils. Si un message indique que ton compte n’a pas accès, préviens Baptiste.
+
+## Time tracking
+Chaque jour, indique sur quel(s) projet(s) tu as travaillé et combien de temps : ${P_URL}/time-matiere-noire/
+
+Pas besoin d’être très détaillé, mais c’est indispensable pour le suivi des projets. Pour les freelances, il sert aussi à vérifier la facture.
+
+## Congés et absences
+À demander **au minimum 2 semaines à l’avance**, idéalement 1 mois, via ${P_URL}/conges-matiere-noire/
+
+## Notes et wiki
+Le tableau de notes est partagé par toute l’équipe. Le wiki rassemble les fiches pratiques comme celle-ci ; si une information est fausse, utilise « Signaler une erreur ».`,
+   en:`All studio tools are gathered on the portal: ${P_URL}/mn/
+
+## First sign-in
+1. Open the portal or any tool.
+2. Click “Sign in with Google”.
+3. Choose your **@matiere-noire.paris** address (not your personal one).
+
+You then stay signed in: one sign-in works for every tool. If a message says your account has no access, tell Baptiste.
+
+## Time tracking
+Every day, record which project(s) you worked on and for how long: ${P_URL}/time-matiere-noire/
+
+No need to be very detailed, but it is essential for project tracking. For freelancers, it is also used to check invoices.
+
+## Leave and absences
+To be requested **at least 2 weeks in advance**, ideally 1 month, via ${P_URL}/conges-matiere-noire/
+
+## Notes and wiki
+The notes board is shared by the whole team. The wiki gathers how-to guides like this one; if something is wrong, use “Report a mistake”.`}},
+ {slug:'poste-referent-et-communication',outils:[],tags:['accueil','poste','whatsapp'],
+  titre:{fr:'Poste de travail, référent et communication',en:'Workstation, supervisor and communication'},
+  resume:{fr:'Ton ordinateur, à qui t’adresser, et comment l’équipe communique.',en:'Your computer, who to ask, and how the team communicates.'},
+  contenu:{fr:`## Poste de travail
+Un PC Windows (tour) t’est attribué à ton arrivée. Mot de passe : en général 4 fois la barre espace, ou 0000. Si ça ne marche pas, demande au reste de l’équipe.
+
+## Référent·e
+- **Stagiaires** : un·e senior de l’équipe est ton référent·e principal·e. C’est la première personne à solliciter si tu n’as plus de tâches, puis le reste de l’équipe. Tu auras aussi une tâche de fond qui durera tout ton stage.
+- **Freelances** : la mission est briefée par le/la chef·fe de projet (objectifs, livrables, deadlines).
+
+## Communication
+On échange sur **WhatsApp** : tu es ajouté·e à une communauté avec un chat général et un chat par projet.
+
+## Questions
+- Paie, gratification, facturation : **Sam**
+- Fonctionnement du studio et planning : **Baptiste**`,
+   en:`## Workstation
+A Windows desktop PC (tower) is assigned to you when you arrive. Password: usually the space bar pressed 4 times, or 0000. If that doesn’t work, ask the rest of the team.
+
+## Supervisor
+- **Interns**: a senior member of the team is your main supervisor. They are the first person to ask if you run out of tasks, then the rest of the team. You will also have a background task running throughout your internship.
+- **Freelancers**: your assignment is briefed by the project lead (objectives, deliverables, deadlines).
+
+## Communication
+We communicate on **WhatsApp**: you are added to a community with a general chat and one chat per project.
+
+## Questions
+- Pay, stipend, invoicing: **Sam**
+- Studio operations and scheduling: **Baptiste**`}},
+ {slug:'tickets-restaurant-paie-et-frais',outils:[],tags:['stagiaires','edenred','navigo','notes de frais'],
+  titre:{fr:'Stagiaires : tickets restaurant, paie et frais',en:'Interns: meal vouchers, pay and expenses'},
+  resume:{fr:'Edenred, fiche de paie, Navigo et notes de frais.',en:'Edenred, payslip, Navigo and expense reports.'},
+  contenu:{fr:`## Tickets restaurant (Edenred)
+1. Installe l’appli **Edenred+** (App Store / Play Store France).
+2. Connecte-toi avec ton adresse Matiere Noire.
+3. Vérifie que ta carte dématérialisée fonctionne.
+
+Tu reçois **10 € par jour travaillé**, utilisables en restaurant, à emporter et en supermarché. En cas de blocage, envoie une capture du message d’erreur à Sam.
+
+## Fiche de paie
+Chaque mois, tu reçois une fiche de paie avec ta gratification, tes jours travaillés et le montant de tickets restaurant du mois suivant.
+
+## Pass Navigo
+Le remboursement est compris dans ta gratification mensuelle. **Envoie le reçu à Sam chaque mois**, objet : TRANSPORT – [Mois] – [Prénom NOM].
+
+## Notes de frais
+Renseigne tes dépenses chaque mois dans le fichier *Outils › template écrite › NDF › NDF TEMPLATE* (Google Sheets) et envoie-le à Sam et Baptiste avec les justificatifs. Le remboursement est versé avec ta gratification.`,
+   en:`## Meal vouchers (Edenred)
+1. Install the **Edenred+** app (French App Store / Play Store).
+2. Sign in with your Matiere Noire address.
+3. Check that your digital card works.
+
+You receive **€10 per day worked**, usable in restaurants, for takeaway and in supermarkets. If you get stuck, send a screenshot of the error to Sam.
+
+## Payslip
+Each month you receive a payslip showing your stipend, your days worked and the meal voucher amount for the following month.
+
+## Pass Navigo
+The reimbursement is included in your monthly stipend. **Send the receipt to Sam every month**, subject: TRANSPORT – [Month] – [First name LAST NAME].
+
+## Expense reports
+Fill in your expenses each month in *Outils › template écrite › NDF › NDF TEMPLATE* (Google Sheets) and send it to Sam and Baptiste with the receipts. The reimbursement is paid with your stipend.`}},
+ {slug:'freelances-facturation',outils:['time'],tags:['freelances','facture','urssaf'],
+  titre:{fr:'Freelances : facturation et documents',en:'Freelancers: invoicing and documents'},
+  resume:{fr:'Envoyer sa facture, la faire correspondre au time tracking, garder son dossier à jour.',en:'Sending your invoice, matching it with time tracking, keeping your file up to date.'},
+  contenu:{fr:`## Facture
+1. Remplis le time tracking **chaque jour** : il sert à vérifier ta facture.
+2. En fin de mission, envoie ta facture à **Sam**.
+3. Les jours facturés doivent correspondre aux jours saisis dans le time tracking.
+
+## Frais engagés pendant une mission
+Envoie le détail et les justificatifs à Sam et Baptiste ; Sam t’indique comment ils sont remboursés.
+
+## Dossier à jour
+Si un document a changé ou expiré, renvoie-le avant de commencer :
+- Attestation de vigilance URSSAF de moins de 6 mois
+- RIB, adresse de facturation, SIRET en cas de changement de statut`,
+   en:`## Invoice
+1. Fill in time tracking **every day**: it is used to check your invoice.
+2. At the end of the assignment, send your invoice to **Sam**.
+3. Invoiced days must match the days recorded in time tracking.
+
+## Expenses during an assignment
+Send the details and receipts to Sam and Baptiste; Sam will tell you how they are reimbursed.
+
+## Keeping your file up to date
+If any document has changed or expired, send the updated version before you start:
+- URSSAF certificate of compliance (attestation de vigilance) less than 6 months old
+- Bank details, billing address, SIRET number if your status has changed`}},
+ {slug:'retour-chez-matiere-noire',outils:['mn','time'],tags:['freelances','retour'],
+  titre:{fr:'Retour chez Matiere Noire (freelances)',en:'Back at Matiere Noire (freelancers)'},
+  resume:{fr:'L’essentiel à revoir quand tu reviens pour une nouvelle mission.',en:'What to check when you come back for a new assignment.'},
+  contenu:{fr:`Bon retour ! Voici ce qu’il faut savoir avant de reprendre.
+
+## Avant ta mission
+- Ton adresse Matiere Noire et ton accès Dropbox sont réactivés avant ton arrivée.
+- Si un de tes documents a changé ou expiré, renvoie-le avant de commencer, voir [[freelances-facturation]].
+
+## En arrivant
+- Accès et codes : voir [[acces-et-horaires]] (ils ont pu changer depuis ta dernière mission).
+- La plateforme demande maintenant une **connexion avec ton adresse Matiere Noire** : voir [[se-connecter-a-la-plateforme]].
+
+## Pendant la mission
+- Time tracking à remplir **chaque jour** : ${P_URL}/time-matiere-noire/ — il sert aussi à vérifier ta facture.
+- Facture à envoyer à Sam en fin de mission.`,
+   en:`Welcome back! Here is what to know before you start again.
+
+## Before your assignment
+- Your Matiere Noire address and Dropbox access are reactivated before you arrive.
+- If any of your documents has changed or expired, send the updated version before you start, see [[freelances-facturation]].
+
+## When you arrive
+- Access and codes: see [[acces-et-horaires]] (they may have changed since your last assignment).
+- The platform now requires **signing in with your Matiere Noire address**: see [[se-connecter-a-la-plateforme]].
+
+## During the assignment
+- Fill in time tracking **every day**: ${P_URL}/time-matiere-noire/ — it is also used to check your invoice.
+- Send your invoice to Sam at the end of the assignment.`}}
+],
+parcours:[
+ {cle:'stagiaires',titre:{fr:'Arrivée au studio : stagiaires',en:'Joining the studio: interns'},description:{fr:'Tout ce qu’il faut savoir pour ta première semaine.',en:'Everything you need for your first week.'},
+  slugs:['acces-et-horaires','comptes-et-documents','se-connecter-a-la-plateforme','poste-referent-et-communication','tickets-restaurant-paie-et-frais']},
+ {cle:'freelances',titre:{fr:'Arrivée au studio : freelances',en:'Joining the studio: freelancers'},description:{fr:'Pour une première mission chez Matiere Noire.',en:'For a first assignment at Matiere Noire.'},
+  slugs:['acces-et-horaires','comptes-et-documents','se-connecter-a-la-plateforme','poste-referent-et-communication','freelances-facturation']},
+ {cle:'retour',titre:{fr:'Retour d’un freelance',en:'Returning freelancers'},description:{fr:'L’essentiel à revoir avant une nouvelle mission.',en:'What to check before a new assignment.'},
+  slugs:['retour-chez-matiere-noire','se-connecter-a-la-plateforme','freelances-facturation']}
+]};
+const accueilManquant=()=>ACCUEIL.fiches.filter(f=>!parSlug(f.slug)).length;
+async function importerAccueil(){
+  const manq=ACCUEIL.fiches.filter(f=>!parSlug(f.slug));
+  if(!confirm(`Importer ${manq.length} fiche(s) d’accueil et les parcours « stagiaires », « freelances » et « retour » ?\nLes fiches qui existent déjà ne sont pas modifiées.`))return;
+  const now=Date.now(), maj={}, ids={};
+  Object.values(FICHES).forEach(f=>{if(f&&f.slug)ids[f.slug]=f.id;});
+  manq.forEach((f,i)=>{const id=uid('f');ids[f.slug]=id;
+    maj['fiches/'+id]={id,slug:f.slug,titre:f.titre,resume:f.resume,contenu:f.contenu,categorie:'Accueil',tags:f.tags,outils:f.outils,
+      relireMois:6,relireLe:addMonths(today(),6),archive:false,creeLe:now+i,majLe:now+i,majPar:ME};});
+  const existants=Object.values(PARC).map(p=>p&&tr(p.titre,'fr'));
+  ACCUEIL.parcours.forEach((p,i)=>{ if(existants.includes(p.titre.fr)) return;
+    maj['parcours/'+uid('p')]={titre:p.titre,description:p.description,fiches:p.slugs.map(s=>ids[s]).filter(Boolean),ordre:i,majLe:now};});
+  try{await update(ref(db,'wiki'),maj);toast(`${manq.length} fiche(s) importée(s)`);}catch(e){alert('Échec de l’import : '+e.message);}
+}
+
+/* ═══ CHECKLISTS DIRECTION (arrivée d'un stagiaire / d'un freelance) ═══
+   Visibles par la direction uniquement. Modèles modifiables par Baptiste ; chaque suivi est une copie du modèle
+   au moment du démarrage, cochée à plusieurs (qui a fait quoi, quand). */
+const MODELES_PROPOSES={
+ stagiaire:{titre:'Arrivée d’un stagiaire',texte:`## Avant l’arrivée
+Convention de stage signée par l’école, le studio et le stagiaire (avant le premier jour)
+Référent·e senior désigné·e (tuteur de la convention) et tâche de fond prévue
+Gratification fixée si le stage dépasse 2 mois (montant et date de versement)
+Nombre de stagiaires présents en même temps vérifié (3 maximum sous 20 salariés)
+Documents reçus : pièce d’identité, numéro de sécurité sociale (et carte Vitale si existante), RIB, adresse postale et adresse en France si la personne y réside, téléphone
+Clavier AZERTY ou QWERTY demandé
+Adresse prénom@matiere-noire.paris créée, mail d’activation envoyé sur l’adresse perso
+Invitation Dropbox envoyée sur l’adresse pro
+Fiche créée dans le référentiel : période « Stage » avec dates, catégorie projet (Administration › Personnes)
+CJM daté saisi dans l’espace privé de l’administration
+Accès plateforme donné et relié à la fiche (Administration › Accès)
+Invitation Edenred envoyée
+Poste préparé (PC, mot de passe, licences) et indiqué dans le planning
+Fiche d’information stagiaires envoyée (FR ou EN)
+## Premier jour
+Accueil : codes d’accès, horaires 10 h – 18 h, déjeuner, poubelles de la cour
+Mail pro activé, Dropbox connectée avec le compte studio (pas un compte perso)
+Ajout à la communauté WhatsApp : chat général et chats des projets
+Première connexion à la plateforme avec l’adresse pro : time tracking, congés, notes
+Présentation du/de la référent·e et de la tâche de fond
+Inscription au registre unique du personnel (partie stagiaires)
+## Première semaine
+Appli Edenred+ installée, carte dématérialisée active
+Time tracking rempli chaque jour
+Rappels donnés : reçu Navigo à Sam chaque mois, note de frais mensuelle à Sam et Baptiste, congés demandés 2 semaines à l’avance
+## Pendant le stage
+Stagiaire ajouté·e dans l’outil Bulletins de stage
+Point de mi-parcours avec le/la référent·e
+## Fin du stage
+Fichiers de travail rangés sur la Dropbox des projets
+Attestation de stage remise
+Date de fin saisie dans le référentiel (fiche archivée si aucun retour prévu)
+Accès retirés : plateforme, mail, Dropbox, Edenred, chats WhatsApp
+Matériel et clés récupérés`},
+ freelance:{titre:'Arrivée d’un freelance (première mission)',texte:`## Avant la mission
+Tarif journalier, dates et modalités validés par mail
+Devis ou contrat de prestation signé : mission, livrables
+NDA signé
+SIRET, RIB et adresse de facturation reçus
+Documents reçus : pièce d’identité, numéro de sécurité sociale (et carte Vitale si existante), adresse postale et adresse en France si la personne y réside, téléphone
+Attestation de vigilance URSSAF de moins de 6 mois (obligatoire dès 5 000 € HT de mission)
+Freelance ajouté au fichier FREELANCER : tarif, disponibilités
+Fournisseur créé dans Pennylane
+Fiche créée dans le référentiel : période « Freelance » avec dates, catégorie projet (Administration › Personnes)
+Tarif saisi comme CJM daté dans l’espace privé de l’administration
+Adresse pro créée (mail d’activation sur l’adresse perso) et invitation Dropbox envoyée
+Accès plateforme donné et relié à la fiche (Administration › Accès)
+Clavier AZERTY ou QWERTY demandé, poste préparé et indiqué dans le planning
+Fiche d’information envoyée (FR ou EN)
+## Jour J
+Brief de la mission par le/la chef·fe de projet : objectifs, livrables, deadlines
+Accueil : codes d’accès, déjeuner, présentation de l’équipe
+Dropbox connectée avec le compte studio
+Ajout aux chats WhatsApp des projets concernés
+Time tracking vérifié : connexion avec l’adresse pro, son nom et le bon projet
+## Fin de mission
+Fichiers de travail rangés sur la Dropbox du projet
+Facture vérifiée : jours facturés = jours du time tracking
+Accès retirés si plus de mission prévue : plateforme, mail, Dropbox, chats WhatsApp
+Fichier FREELANCER mis à jour : expérience MN, review, tarif, disponibilités
+Date de fin saisie dans le référentiel`},
+ freelanceRetour:{titre:'Retour d’un freelance (déjà venu)',texte:`## Avant la mission
+Tarif journalier et disponibilité vérifiés dans le fichier FREELANCER, mis à jour si besoin
+Date du projet, modalités et tarif validés par mail
+Dossier à jour : NDA
+Dossier à jour : attestation de vigilance URSSAF de moins de 6 mois (obligatoire dès 5 000 € HT de mission)
+Dossier à jour : SIRET, RIB et adresse de facturation inchangés
+Nouvelle période « Freelance » ajoutée à sa fiche du référentiel (fiche désarchivée si besoin), CJM vérifié
+Accès réactivés : adresse mail Matiere Noire, Dropbox, plateforme (Administration › Accès), chats WhatsApp des projets
+Poste préparé et indiqué dans le planning
+Fiche de rappel freelance envoyée (FR ou EN)
+## Jour J
+Brief de la mission par le/la chef·fe de projet : objectifs, livrables, deadlines
+Personnes arrivées depuis la dernière mission présentées
+Changements signalés depuis la dernière mission : outils, structure Dropbox, process, codes d’accès
+Time tracking vérifié : connexion avec l’adresse pro, son nom et le bon projet
+## Fin de mission
+Fichiers de travail rangés sur la Dropbox du projet
+Facture vérifiée : jours facturés = jours du time tracking
+Accès retirés si plus de mission prévue : plateforme, mail, Dropbox, chats WhatsApp
+Fichier FREELANCER mis à jour : expérience MN, review, tarif, disponibilités
+Date de fin saisie dans le référentiel`}
+};
+let MODELES={}, SUIVIS={}, PEOPLE_REF=[];
+function parseModele(texte){
+  const out=[]; let sec='';
+  String(texte||'').split('\n').map(l=>l.trim()).filter(Boolean).forEach(l=>{
+    if(l.startsWith('## ')) sec=l.slice(3).trim(); else out.push({id:'i'+out.length,section:sec,texte:l.replace(/^[-*]\s+/,'')});
+  });
+  return out;
+}
+const progres=s=>{const n=(s.items||[]).length, f=(s.items||[]).filter(i=>s.coches&&s.coches[i.id]).length;return {n,f,pct:n?Math.round(f*100/n):0};};
+const suivisEnCours=()=>Object.entries(SUIVIS).filter(([,s])=>s&&!s.archive);
+const prenomDe=email=>{const e=String(email||'').split('@')[0];return e.charAt(0).toUpperCase()+e.slice(1);};
+if(DIRECTION){
+  onValue(ref(db,'wikiDirection'),s=>{const v=s.val()||{};MODELES=v.modeles||{};SUIVIS=v.suivis||{};renderAdm();
+    const n=$('#ck-note');
+    if(vue.k==='suivi'&&n&&n.dataset.for===vue.id&&SUIVIS[vue.id]&&!!SUIVIS[vue.id].archive===(n.dataset.arch==='1')) patchSuivi();   // pas de re-rendu : on ne perd ni la saisie ni la position
+    else if(['checklists','suivi'].includes(vue.k))render();},()=>{});
+  get(ref(db,'referentiel/people')).then(s=>{PEOPLE_REF=(s.val()||[]).filter(p=>p&&p.id&&p.nom);}).catch(()=>{});
+}
+
+function vChecklists(){
+  if(!DIRECTION){go('home');return;}
+  const mods=Object.entries(MODELES).sort((a,b)=>(a[1].titre||'').localeCompare(b[1].titre||'','fr'));
+  const enc=suivisEnCours().sort((a,b)=>(b[1].creeLe||0)-(a[1].creeLe||0));
+  const finis=Object.entries(SUIVIS).filter(([,s])=>s&&s.archive).sort((a,b)=>(b[1].finiLe||0)-(a[1].finiLe||0));
+  const ligne=([id,s])=>{const p=progres(s);return `<li><a href="#" data-s="${esc(id)}"><div class="it">${esc(s.personne)} <span style="font-weight:400;color:var(--ink2)">· ${esc(s.modeleTitre)}</span></div>
+    <div class="bar"><span style="width:${p.pct}%"></span></div><div class="im">${p.f} sur ${p.n} · démarrée le ${esc(new Date(s.creeLe).toLocaleDateString('fr-FR'))} par ${esc(prenomDe(s.creePar))}</div></a></li>`;};
+  $('#main').innerHTML=`<div class="edbar"><strong>Checklists de la direction</strong></div>
+    <p class="hint" style="margin:-8px 0 18px">Visibles uniquement par Baptiste, Sam, Pierre et Félix. Chacun peut cocher ; le nom et la date de chaque étape sont enregistrés.</p>
+    ${!mods.length?(EDIT?`<div class="notice">Aucun modèle pour l’instant. <button class="btn p" id="ck-seed">Créer les modèles proposés (stagiaire, freelance, retour freelance)</button></div>`
+      :'<div class="empty">Baptiste n’a pas encore créé les modèles.</div>'):`
+    <div class="box" style="margin:0 0 26px"><strong>Démarrer une checklist</strong>
+      <div class="ed" style="grid-template-columns:1fr 1fr auto;gap:10px;align-items:end">
+        <div><label>Modèle</label><select id="ck-m">${mods.map(([id,m])=>`<option value="${esc(id)}">${esc(m.titre)}</option>`).join('')}</select></div>
+        <div><label>Personne</label><input id="ck-p" list="ck-people" placeholder="Prénom Nom">
+          <datalist id="ck-people">${PEOPLE_REF.map(p=>`<option value="${esc(p.nom)}">`).join('')}</datalist></div>
+        <div><button class="btn p" id="ck-go">Démarrer</button></div></div></div>`}
+    <div class="sec"><h2>En cours</h2>${enc.length?`<ul class="items">${enc.map(ligne).join('')}</ul>`:'<div class="empty">Aucune checklist en cours.</div>'}</div>
+    ${finis.length?`<div class="sec"><h2>Terminées</h2><ul class="items">${finis.map(ligne).join('')}</ul></div>`:''}
+    ${mods.length?`<div class="sec"><h2>Modèles</h2><ul class="items">${mods.map(([id,m])=>`<li><a href="#" data-m="${esc(id)}"><div class="it">${esc(m.titre)}</div>
+      <div class="im">${parseModele(m.texte).length} étapes${EDIT?' · modifier':''}</div></a></li>`).join('')}</ul>
+      ${EDIT?'<button class="btn" id="ck-newm">Nouveau modèle</button> <button class="btn" id="ck-reseed">Recharger les modèles proposés</button>':''}</div>`:''}`;
+  const seed=$('#ck-seed'); if(seed) seed.onclick=async()=>{
+    try{await update(ref(db,'wikiDirection/modeles'),Object.fromEntries(Object.entries(MODELES_PROPOSES).map(([k,m])=>[k,{...m,majLe:Date.now()}])));toast('Modèles créés');}
+    catch(e){alert('Échec : '+e.message);}
+  };
+  const goB=$('#ck-go'); if(goB) goB.onclick=async()=>{
+    const m=MODELES[$('#ck-m').value], nom=$('#ck-p').value.trim();
+    if(!nom){alert('Indique la personne concernée.');return;}
+    const fiche=PEOPLE_REF.find(p=>p.nom===nom);
+    const id=uid('s');
+    try{await set(ref(db,'wikiDirection/suivis/'+id),{modeleId:$('#ck-m').value,modeleTitre:m.titre,personne:nom,personId:fiche?fiche.id:null,
+      items:parseModele(m.texte),coches:{},note:'',archive:false,creePar:ME,creeLe:Date.now()});go('suivi',{id});}
+    catch(e){alert('Échec : '+e.message);}
+  };
+  $('#main').querySelectorAll('[data-s]').forEach(a=>a.onclick=e=>{e.preventDefault();go('suivi',{id:a.dataset.s});});
+  $('#main').querySelectorAll('[data-m]').forEach(a=>a.onclick=e=>{e.preventDefault();if(EDIT)go('modele',{id:a.dataset.m});});
+  const nm=$('#ck-newm'); if(nm) nm.onclick=()=>go('modele',{id:null});
+  const rs=$('#ck-reseed'); if(rs) rs.onclick=async()=>{
+    if(!confirm('Remplacer les modèles « stagiaire », « freelance première mission » et « retour freelance » par la version proposée ? Tes autres modèles et les checklists déjà démarrées ne changent pas.'))return;
+    try{await update(ref(db,'wikiDirection/modeles'),Object.fromEntries(Object.entries(MODELES_PROPOSES).map(([k,m])=>[k,{...m,majLe:Date.now()}])));toast('Modèles rechargés');}
+    catch(e){alert('Échec : '+e.message);}
+  };
+}
+function vSuivi(){
+  const s=SUIVIS[vue.id]; if(!DIRECTION||!s){go('checklists');return;}
+  const p=progres(s), secs=[];
+  (s.items||[]).forEach(i=>{let g=secs.find(x=>x.t===i.section);if(!g){g={t:i.section,l:[]};secs.push(g);}g.l.push(i);});
+  $('#main').innerHTML=`<div class="edbar"><a href="#" id="ck-back">Checklists</a><span class="spacer"></span>
+      ${s.archive?'<button class="btn" id="ck-re">Rouvrir</button>':'<button class="btn p" id="ck-fin">Marquer terminée</button>'}</div>
+    <article><h1 style="font-size:32px">${esc(s.personne)}</h1><p class="lead">${esc(s.modeleTitre)}</p>
+    <div class="bar big"><span id="ck-bar" style="width:${p.pct}%"></span></div>
+    <div class="meta"><span id="ck-cnt">${p.f} étape${p.f>1?'s':''} faite${p.f>1?'s':''} sur ${p.n}</span><span>Démarrée le ${esc(new Date(s.creeLe).toLocaleDateString('fr-FR'))} par ${esc(prenomDe(s.creePar))}</span></div>
+    ${secs.map(g=>`<div class="sec">${g.t?`<h2>${esc(g.t)}</h2>`:''}<ul class="ck">${g.l.map(i=>{const c=s.coches&&s.coches[i.id];
+      return `<li class="${c?'done':''}"><label><input type="checkbox" data-i="${esc(i.id)}"${c?' checked':''}${s.archive?' disabled':''}>
+        <span>${esc(i.texte)}${c?`<small>${esc(prenomDe(c.par))}, le ${esc(new Date(c.le).toLocaleDateString('fr-FR'))}</small>`:''}</span></label></li>`;}).join('')}</ul></div>`).join('')}
+    <div class="sec"><h2>Notes</h2><textarea id="ck-note" data-for="${esc(vue.id)}" data-arch="${s.archive?1:0}" style="width:100%;min-height:90px;border:1px solid var(--rule);border-radius:3px;padding:8px"
+      placeholder="Ce qui reste à suivre, documents en attente…"${s.archive?' disabled':''}>${esc(s.note||'')}</textarea></div></article>`;
+  $('#ck-back').onclick=e=>{e.preventDefault();go('checklists');};
+  $('#main').querySelectorAll('[data-i]').forEach(c=>c.onchange=()=>{
+    set(ref(db,`wikiDirection/suivis/${vue.id}/coches/${c.dataset.i}`),c.checked?{par:ME,le:Date.now()}:null).catch(e=>{alert('Échec : '+e.message);c.checked=!c.checked;});
+  });
+  let tn; $('#ck-note').oninput=e=>{clearTimeout(tn);const v=e.target.value;tn=setTimeout(()=>set(ref(db,`wikiDirection/suivis/${vue.id}/note`),v).then(()=>toast('Note enregistrée')).catch(er=>alert(er.message)),800);};
+  const fin=$('#ck-fin'); if(fin) fin.onclick=()=>{
+    if(p.f<p.n&&!confirm(`Il reste ${p.n-p.f} étape(s) non cochée(s). Marquer quand même la checklist comme terminée ?`))return;
+    update(ref(db,'wikiDirection/suivis/'+vue.id),{archive:true,finiLe:Date.now(),finiPar:ME}).then(()=>toast('Checklist terminée')).catch(e=>alert(e.message));
+  };
+  const re=$('#ck-re'); if(re) re.onclick=()=>update(ref(db,'wikiDirection/suivis/'+vue.id),{archive:false}).catch(e=>alert(e.message));
+}
+function patchSuivi(){
+  const s=SUIVIS[vue.id], p=progres(s);
+  $('#ck-bar').style.width=p.pct+'%';
+  $('#ck-cnt').textContent=`${p.f} étape${p.f>1?'s':''} faite${p.f>1?'s':''} sur ${p.n}`;
+  $('#main').querySelectorAll('[data-i]').forEach(cb=>{
+    const c=s.coches&&s.coches[cb.dataset.i], li=cb.closest('li'), span=cb.nextElementSibling;
+    cb.checked=!!c; li.classList.toggle('done',!!c);
+    let sm=span.querySelector('small');
+    if(c){if(!sm){sm=document.createElement('small');span.appendChild(sm);} sm.textContent=`${prenomDe(c.par)}, le ${new Date(c.le).toLocaleDateString('fr-FR')}`;}
+    else if(sm) sm.remove();
+  });
+  const n=$('#ck-note'); if(document.activeElement!==n) n.value=s.note||'';
+}
+function vModele(){
+  if(!EDIT){go('checklists');return;}
+  const m=vue.id?MODELES[vue.id]:{titre:'',texte:'## Avant l’arrivée\n\n## Premier jour\n'};
+  if(vue.id&&!m){go('checklists');return;}
+  $('#main').innerHTML=`<div class="edbar"><strong>${vue.id?'Modifier le modèle':'Nouveau modèle'}</strong><span class="spacer"></span>
+      ${vue.id?'<button class="btn d" id="md-del">Supprimer</button>':''}<button class="btn" id="md-x">Annuler</button><button class="btn p" id="md-ok">Enregistrer</button></div>
+    <p class="hint" style="margin:-8px 0 12px">Une étape par ligne. Une ligne qui commence par « ## » crée une partie. Les checklists déjà démarrées ne changent pas.</p>
+    <div class="ed" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"><div>
+      <label>Titre</label><input id="md-t" value="${esc(m.titre)}">
+      <label>Étapes</label><textarea class="body" id="md-b">${esc(m.texte)}</textarea></div>
+      <div class="prev" id="md-p"></div></div>`;
+  const pv=()=>{const it=parseModele($('#md-b').value);let sec=null;
+    $('#md-p').innerHTML=`<strong>${esc($('#md-t').value||'Sans titre')}</strong> · ${it.length} étapes`+it.map(i=>{const h=i.section!==sec?`<h3 style="margin:16px 0 6px;font-size:15px">${esc(i.section)}</h3>`:'';sec=i.section;
+      return h+`<div style="padding:3px 0">☐ ${esc(i.texte)}</div>`;}).join('');};
+  $('#md-b').oninput=pv; $('#md-t').oninput=pv; pv();
+  $('#md-x').onclick=()=>go('checklists');
+  $('#md-ok').onclick=async()=>{
+    const titre=$('#md-t').value.trim(), texte=$('#md-b').value;
+    if(!titre||!parseModele(texte).length){alert('Il faut un titre et au moins une étape.');return;}
+    try{await set(ref(db,'wikiDirection/modeles/'+(vue.id||uid('m'))),{titre,texte,majLe:Date.now()});toast('Modèle enregistré');go('checklists');}
+    catch(e){alert('Échec : '+e.message);}
+  };
+  const d=$('#md-del'); if(d) d.onclick=async()=>{
+    if(!confirm('Supprimer ce modèle ? Les checklists déjà démarrées sont conservées.'))return;
+    try{await remove(ref(db,'wikiDirection/modeles/'+vue.id));go('checklists');}catch(e){alert(e.message);}
+  };
+}
+
+/* ═══ recherche & langue ═══ */
+$('#q').oninput=e=>{q=e.target.value.trim(); if(q){ if(location.hash) history.replaceState(null,'',location.pathname); vue={k:'search'}; render(); } else go('home');};
+document.querySelectorAll('.lang button').forEach(b=>b.onclick=()=>{L=b.dataset.l;try{localStorage.setItem('mn_wiki_lang',L);}catch(_){}
+  if(vue.k==='edit'||vue.k==='pedit'){document.querySelectorAll('.lang button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.l===L));return;}
+  render();});
+window.addEventListener('beforeunload',e=>{if(vue.k==='edit'&&E){e.preventDefault();e.returnValue='';}});
+$('.brand').onclick=e=>{e.preventDefault();q='';$('#q').value='';ctxParc=null;go('home');};
+render();
 </script>
 </body>
 </html>
